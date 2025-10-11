@@ -1,0 +1,529 @@
+2025-10-04 23:24:29 - root - INFO - ==================================================
+2025-10-04 23:24:29 - root - INFO - ==================================================
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - select pg_catalog.version()
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - select current_schema()
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - show standard_conforming_strings
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [generated in 0.00176s] ('users', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [cached since 0.02974s ago] ('games', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [cached since 0.03354s ago] ('transactions', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [generated in 0.00150s] ('gamestatus', 'pg_catalog')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - CREATE TYPE gamestatus AS ENUM ('PENDING', 'COMPLETED')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [no key 0.00100s] ()
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [cached since 0.06217s ago] ('gameresult', 'pg_catalog')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - CREATE TYPE gameresult AS ENUM ('WIN', 'LOSS', 'DRAW')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [no key 0.01025s] ()
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [cached since 0.1041s ago] ('transactionstatus', 'pg_catalog')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - CREATE TYPE transactionstatus AS ENUM ('PENDING', 'PAID', 'EXPIRED')
+2025-10-04 23:24:29 - sqlalchemy.engine.Engine - INFO - [no key 0.00635s] ()
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE users (
+	id SERIAL NOT NULL, 
+	telegram_id INTEGER NOT NULL, 
+	username VARCHAR(255), 
+	first_name VARCHAR(255), 
+	total_wagered FLOAT, 
+	total_won FLOAT, 
+	games_played INTEGER, 
+	created_at TIMESTAMP WITHOUT TIME ZONE, 
+	last_activity TIMESTAMP WITHOUT TIME ZONE, 
+	PRIMARY KEY (id)
+)
+
+
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - [no key 0.00367s] ()
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_users_telegram_id ON users (telegram_id)
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - [no key 0.00089s] ()
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE games (
+	id SERIAL NOT NULL, 
+	game_id VARCHAR(100) NOT NULL, 
+	user_id INTEGER, 
+	game_type VARCHAR(50), 
+	bet_amount FLOAT, 
+	currency VARCHAR(10), 
+	status gamestatus, 
+	result gameresult, 
+	payout FLOAT, 
+	game_data TEXT, 
+	created_at TIMESTAMP WITHOUT TIME ZONE, 
+	completed_at TIMESTAMP WITHOUT TIME ZONE, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES users (id)
+)
+
+
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - [no key 0.00180s] ()
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_games_game_id ON games (game_id)
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - [no key 0.00102s] ()
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE transactions (
+	id SERIAL NOT NULL, 
+	invoice_id VARCHAR(255) NOT NULL, 
+	user_id INTEGER, 
+	game_id INTEGER, 
+	amount FLOAT, 
+	currency VARCHAR(10), 
+	status transactionstatus, 
+	pay_url VARCHAR(500), 
+	created_at TIMESTAMP WITHOUT TIME ZONE, 
+	paid_at TIMESTAMP WITHOUT TIME ZONE, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(user_id) REFERENCES users (id), 
+	FOREIGN KEY(game_id) REFERENCES games (id)
+)
+
+
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - [no key 0.00159s] ()
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_transactions_invoice_id ON transactions (invoice_id)
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - [no key 0.00095s] ()
+2025-10-04 23:24:30 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-10-04 23:24:30 - aiogram.dispatcher - INFO - Start polling
+2025-10-04 23:24:31 - aiogram.dispatcher - INFO - Run polling for bot @Chad121Bot id=8196057136 - 'Chad121Bot'
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - SELECT users.id, users.telegram_id, users.username, users.first_name, users.total_wagered, users.total_won, users.games_played, users.created_at, users.last_activity 
+FROM users 
+WHERE users.telegram_id = $1::INTEGER
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - [generated in 0.00135s] (816745533,)
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - INSERT INTO users (telegram_id, username, first_name, total_wagered, total_won, games_played, created_at, last_activity) VALUES ($1::INTEGER, $2::VARCHAR, $3::VARCHAR, $4::FLOAT, $5::FLOAT, $6::INTEGER, $7::TIMESTAMP WITHOUT TIME ZONE, $8::TIMESTAMP WITHOUT TIME ZONE) RETURNING users.id
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - [generated in 0.00140s] (816745533, 'vla_diemir', 'Владимир', 0.0, 0.0, 0, datetime.datetime(2025, 10, 4, 19, 24, 59, 700922), datetime.datetime(2025, 10, 4, 19, 24, 59, 700922))
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - SELECT users.id, users.telegram_id, users.username, users.first_name, users.total_wagered, users.total_won, users.games_played, users.created_at, users.last_activity 
+FROM users 
+WHERE users.id = $1::INTEGER
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - [generated in 0.00192s] (1,)
+2025-10-04 23:24:59 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-10-04 23:24:59 - aiogram.event - INFO - Update id=741725395 is not handled. Duration 139 ms by bot id=8196057136
+2025-10-04 23:24:59 - aiogram.event - ERROR - Cause exception while process update id=741725395 by bot id=8196057136
+ValidationError: 1 validation error for ReplyKeyboardMarkup
+keyboard
+  Field required [type=missing, input_value={'resize_keyboard': True, 'row_width': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+Traceback (most recent call last):
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 309, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 158, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 25, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\fsm\middleware.py", line 41, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 276, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\router.py", line 128, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\router.py", line 123, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\router.py", line 156, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\router.py", line 128, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\router.py", line 123, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\router.py", line 148, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\bot\handlers.py", line 47, in cmd_start
+    reply_markup=get_main_menu(),
+                 ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\bot\keyboards.py", line 5, in get_main_menu
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\venv_3_12\Lib\site-packages\pydantic\main.py", line 164, in __init__
+    __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ReplyKeyboardMarkup
+keyboard
+  Field required [type=missing, input_value={'resize_keyboard': True, 'row_width': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+2025-10-05 00:01:44 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - Request timeout error
+2025-10-05 00:01:44 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8196057136)
+2025-10-05 00:01:56 - aiogram.dispatcher - INFO - Connection established (tryings = 1, bot id = 8196057136)
+2025-10-05 00:08:51 - root - INFO - ==================================================
+2025-10-05 00:08:51 - root - INFO - ==================================================
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - select pg_catalog.version()
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - select current_schema()
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - show standard_conforming_strings
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [generated in 0.00129s] ('users', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [cached since 0.02058s ago] ('games', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [cached since 0.02453s ago] ('transactions', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [generated in 0.00137s] ('gamestatus', 'pg_catalog')
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [cached since 0.006681s ago] ('gameresult', 'pg_catalog')
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - [cached since 0.01155s ago] ('transactionstatus', 'pg_catalog')
+2025-10-05 00:08:52 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-10-05 00:08:52 - aiogram.dispatcher - INFO - Start polling
+2025-10-05 00:08:53 - aiogram.dispatcher - INFO - Run polling for bot @Chad121Bot id=8196057136 - 'Chad121Bot'
+2025-10-05 00:09:04 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-05 00:09:04 - sqlalchemy.engine.Engine - INFO - SELECT users.id, users.telegram_id, users.username, users.first_name, users.total_wagered, users.total_won, users.games_played, users.created_at, users.last_activity 
+FROM users 
+WHERE users.telegram_id = $1::INTEGER
+2025-10-05 00:09:04 - sqlalchemy.engine.Engine - INFO - [generated in 0.00164s] (816745533,)
+2025-10-05 00:09:04 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-10-05 00:09:04 - aiogram.event - INFO - Update id=741725396 is not handled. Duration 31 ms by bot id=8196057136
+2025-10-05 00:09:04 - aiogram.event - ERROR - Cause exception while process update id=741725396 by bot id=8196057136
+ValidationError: 1 validation error for ReplyKeyboardMarkup
+keyboard
+  Field required [type=missing, input_value={'resize_keyboard': True, 'row_width': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+Traceback (most recent call last):
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 309, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 158, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 25, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 41, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 276, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 128, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 123, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 156, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 128, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 123, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 148, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\bot\handlers.py", line 47, in cmd_start
+    reply_markup=get_main_menu(),
+                 ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\bot\keyboards.py", line 5, in get_main_menu
+    keyboard = ReplyKeyboardMarkup(
+               ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\pydantic\main.py", line 164, in __init__
+    __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ReplyKeyboardMarkup
+keyboard
+  Field required [type=missing, input_value={'resize_keyboard': True, 'row_width': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+2025-10-05 00:12:51 - root - INFO - ==================================================
+2025-10-05 00:12:51 - root - INFO - ==================================================
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - select pg_catalog.version()
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - select current_schema()
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - show standard_conforming_strings
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [generated in 0.00140s] ('users', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [cached since 0.01483s ago] ('games', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [cached since 0.01855s ago] ('transactions', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [generated in 0.00113s] ('gamestatus', 'pg_catalog')
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [cached since 0.00583s ago] ('gameresult', 'pg_catalog')
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - [cached since 0.009511s ago] ('transactionstatus', 'pg_catalog')
+2025-10-05 00:12:51 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-10-05 00:12:52 - aiogram.dispatcher - INFO - Start polling
+2025-10-05 00:12:52 - aiogram.dispatcher - INFO - Run polling for bot @Chad121Bot id=8196057136 - 'Chad121Bot'
+2025-10-05 00:12:57 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-05 00:12:57 - sqlalchemy.engine.Engine - INFO - SELECT users.id, users.telegram_id, users.username, users.first_name, users.total_wagered, users.total_won, users.games_played, users.created_at, users.last_activity 
+FROM users 
+WHERE users.telegram_id = $1::INTEGER
+2025-10-05 00:12:57 - sqlalchemy.engine.Engine - INFO - [generated in 0.00149s] (816745533,)
+2025-10-05 00:12:57 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-10-05 00:12:57 - aiogram.event - INFO - Update id=741725397 is not handled. Duration 47 ms by bot id=8196057136
+2025-10-05 00:12:57 - aiogram.event - ERROR - Cause exception while process update id=741725397 by bot id=8196057136
+ValidationError: 1 validation error for ReplyKeyboardMarkup
+keyboard
+  Field required [type=missing, input_value={'resize_keyboard': True, 'row_width': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+Traceback (most recent call last):
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 309, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 158, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 25, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 41, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 276, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 128, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 123, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 156, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 128, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 123, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 148, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\bot\handlers.py", line 47, in cmd_start
+    reply_markup=get_main_menu(),
+                 ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\bot\keyboards.py", line 5, in get_main_menu
+    keyboard = ReplyKeyboardMarkup(
+               ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\pydantic\main.py", line 164, in __init__
+    __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ReplyKeyboardMarkup
+keyboard
+  Field required [type=missing, input_value={'resize_keyboard': True, 'row_width': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+2025-10-05 00:15:21 - root - INFO - ==================================================
+2025-10-05 00:15:21 - root - INFO - ==================================================
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - select pg_catalog.version()
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - select current_schema()
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - show standard_conforming_strings
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [generated in 0.00156s] ('users', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [cached since 0.01702s ago] ('games', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [cached since 0.0228s ago] ('transactions', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [generated in 0.00133s] ('gamestatus', 'pg_catalog')
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [cached since 0.005964s ago] ('gameresult', 'pg_catalog')
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - [cached since 0.009948s ago] ('transactionstatus', 'pg_catalog')
+2025-10-05 00:15:21 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-10-05 00:15:22 - aiogram.dispatcher - INFO - Start polling
+2025-10-05 00:15:22 - aiogram.dispatcher - INFO - Run polling for bot @Chad121Bot id=8196057136 - 'Chad121Bot'
+2025-10-05 00:15:26 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-10-05 00:15:26 - sqlalchemy.engine.Engine - INFO - SELECT users.id, users.telegram_id, users.username, users.first_name, users.total_wagered, users.total_won, users.games_played, users.created_at, users.last_activity 
+FROM users 
+WHERE users.telegram_id = $1::INTEGER
+2025-10-05 00:15:26 - sqlalchemy.engine.Engine - INFO - [generated in 0.00178s] (816745533,)
+2025-10-05 00:15:26 - sqlalchemy.engine.Engine - INFO - ROLLBACK
+2025-10-05 00:15:26 - aiogram.event - INFO - Update id=741725398 is not handled. Duration 31 ms by bot id=8196057136
+2025-10-05 00:15:26 - aiogram.event - ERROR - Cause exception while process update id=741725398 by bot id=8196057136
+ValidationError: 1 validation error for ReplyKeyboardMarkup
+keyboard
+  Field required [type=missing, input_value={'resize_keyboard': True, 'row_width': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+Traceback (most recent call last):
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 309, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 158, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 25, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 41, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 276, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 128, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 123, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 156, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 128, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 123, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 148, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\bot\handlers.py", line 47, in cmd_start
+    reply_markup=get_main_menu(),
+                 ^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\bot\keyboards.py", line 5, in get_main_menu
+    keyboard = ReplyKeyboardMarkup(
+               ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Владимир\crypto_casino\.venv\Lib\site-packages\pydantic\main.py", line 164, in __init__
+    __pydantic_self__.__pydantic_validator__.validate_python(data, self_instance=__pydantic_self__)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for ReplyKeyboardMarkup
+keyboard
+  Field required [type=missing, input_value={'resize_keyboard': True, 'row_width': 2}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.5/v/missing
+2025-10-05 16:29:22 - aiogram.dispatcher - INFO - Start polling
+2025-10-05 16:29:22 - aiogram.dispatcher - INFO - Run polling for bot @Chad121Bot id=8196057136 - 'Chad121Bot'
+2025-10-05 16:29:38 - aiogram.event - INFO - Update id=741725556 is handled. Duration 0 ms by bot id=8196057136
+2025-10-05 16:29:52 - aiogram.event - INFO - Update id=741725557 is handled. Duration 46 ms by bot id=8196057136
+2025-10-05 16:29:58 - aiogram.event - INFO - Update id=741725558 is handled. Duration 0 ms by bot id=8196057136
+2025-10-05 16:30:00 - aiogram.event - INFO - Update id=741725559 is handled. Duration 0 ms by bot id=8196057136
+2025-10-05 16:30:01 - aiogram.event - INFO - Update id=741725560 is handled. Duration 0 ms by bot id=8196057136
+2025-10-05 16:37:16 - aiogram.dispatcher - INFO - Polling stopped
+2025-10-05 16:37:16 - aiogram.dispatcher - INFO - Polling stopped for bot @Chad121Bot id=8196057136 - 'Chad121Bot'
+2025-10-05 16:46:33 - aiogram.dispatcher - INFO - Start polling
+2025-10-05 16:46:33 - aiogram.dispatcher - INFO - Run polling for bot @Chad121Bot id=8196057136 - 'Chad121Bot'
+2025-10-05 16:46:43 - aiogram.event - INFO - Update id=741725561 is not handled. Duration 14 ms by bot id=8196057136
+2025-10-05 16:46:45 - aiogram.event - INFO - Update id=741725562 is not handled. Duration 0 ms by bot id=8196057136
+2025-10-05 16:46:50 - aiogram.event - INFO - Update id=741725563 is not handled. Duration 0 ms by bot id=8196057136
+2025-10-05 16:46:51 - aiogram.event - INFO - Update id=741725564 is not handled. Duration 0 ms by bot id=8196057136
