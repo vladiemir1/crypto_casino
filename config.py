@@ -1,29 +1,35 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from typing import Optional
 
 class Settings(BaseSettings):
-    """Настройки приложения"""
+    # Telegram Bot
+    BOT_TOKEN: str
     
-    # Telegram
-    bot_token: str = Field(..., env="TELEGRAM_BOT_TOKEN")
-    admin_id: int = Field(..., env="ADMIN_ID")
+    # CryptoBot API
+    cryptobot_token: str
     
-    # CryptoBot
-    cryptobot_token: str = Field(..., env="CRYPTOBOT_TOKEN")
+    # Admin ID
+    admin_id: Optional[str] = None
+    
+    # Debug mode
+    debug: Optional[bool] = False
     
     # Database
-    database_url: str = Field(..., env="DATABASE_URL")
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:root@localhost:5432/crypto_casino"
     
     # Webhook
-    webhook_url: str = Field(..., env="WEBHOOK_URL")
-    webhook_port: int = Field(8000, env="WEBHOOK_PORT")
-    
-    # App
-    debug: bool = Field(False, env="DEBUG")
-    environment: str = Field("production", env="ENVIRONMENT")
+    WEBHOOK_URL: str = "https://twelve-ducks-check.loca.lt"
+    WEBHOOK_PORT: int = 8000
+    WEBHOOK_PATH: str = "/webhook-secret-path"
     
     class Config:
         env_file = ".env"
-        case_sensitive = False
+        env_file_encoding = "utf-8"
+        extra = "ignore"
 
 settings = Settings()
+
+# Экспортируем для обратной совместимости
+BOT_TOKEN = settings.BOT_TOKEN
+WEBHOOK_URL = settings.WEBHOOK_URL
+WEBHOOK_PATH = settings.WEBHOOK_PATH
