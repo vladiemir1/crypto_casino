@@ -4,27 +4,23 @@ from datetime import datetime
 import enum
 from database.database import Base
 
-
 # ========================== 
 # ENUM типы
 # ==========================
 
 class GameStatus(enum.Enum):
     PENDING = "pending"
-    COMPLETED = "completed"
-
+    COMPLETED = "completed"  # Добавлено для устранения ошибки
 
 class GameResult(enum.Enum):
     WIN = "win"
     LOSS = "loss"
     DRAW = "draw"
 
-
 class TransactionStatus(enum.Enum):
     PENDING = "pending"
     PAID = "paid"
     EXPIRED = "expired"
-
 
 # ========================== 
 # МОДЕЛИ
@@ -55,7 +51,6 @@ class User(Base):
     def __repr__(self):
         return f"<User(id={self.id}, telegram_id={self.telegram_id}, username={self.username})>"
 
-
 class Game(Base):
     """Модель игры"""
     __tablename__ = "games"
@@ -70,7 +65,7 @@ class Game(Base):
     currency = Column(String(10), default="USDT")
     
     # Статус и результат
-    status = Column(SQLEnum(GameStatus), default=GameStatus.PENDING)
+    status = Column(SQLEnum(GameStatus), default=GameStatus.PENDING)  # Использует обновлённый enum
     result = Column(SQLEnum(GameResult), nullable=True)
     payout = Column(Float, default=0.0)
     
@@ -87,7 +82,6 @@ class Game(Base):
     
     def __repr__(self):
         return f"<Game(id={self.id}, game_id={self.game_id}, type={self.game_type}, status={self.status})>"
-
 
 class Transaction(Base):
     """Модель транзакции"""

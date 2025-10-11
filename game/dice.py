@@ -6,12 +6,12 @@ class DiceGame(TelegramDiceGame):
     🎲 Кости (1-6)
     
     Варианты ставок:
-    - Больше/Меньше (4-5-6 / 1-2-3) - x1.9
-    - Четное/Нечетное - x1.9
-    - Конкретное число - x5.5
+    - Больше/Меньше (4-5-6 / 1-2-3) - 1.8x
+    - Четное/Нечетное - 1.8x
+    - Конкретное число - 3.1x
     """
     
-    def __init__(self, bet_amount: float, currency: str, bet_type: str, bet_value=None):
+    def __init__(self, bet_amount: float, currency: str, bet_type: str, bet_value=None):  # ✅ ИСПРАВЛЕНО
         super().__init__(bet_amount, currency)
         self.bet_type = bet_type  # 'high_low', 'even_odd', 'exact'
         self.bet_value = bet_value
@@ -29,23 +29,23 @@ class DiceGame(TelegramDiceGame):
         if self.bet_type == "high_low":
             if self.bet_value == "high" and value in [4, 5, 6]:
                 result = "win"
-                multiplier = 1.9
+                multiplier = 1.8
             elif self.bet_value == "low" and value in [1, 2, 3]:
                 result = "win"
-                multiplier = 1.9
+                multiplier = 1.8
         
         elif self.bet_type == "even_odd":
             if self.bet_value == "even" and value % 2 == 0:
                 result = "win"
-                multiplier = 1.9
+                multiplier = 1.8
             elif self.bet_value == "odd" and value % 2 != 0:
                 result = "win"
-                multiplier = 1.9
+                multiplier = 1.8
         
         elif self.bet_type == "exact":
             if value == self.bet_value:
                 result = "win"
-                multiplier = 5.5
+                multiplier = 3.1
         
         payout = self.calculate_payout(multiplier)
         

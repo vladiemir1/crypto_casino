@@ -6,7 +6,7 @@ class BasketballGame(TelegramDiceGame):
     🏀 Баскетбол (1-5)
     
     4-5 - Гол (1.8x)
-    1-3 - Мимо (1.3x)
+    1-2-3 - Мимо (1.3x)
     """
     
     def __init__(self, bet_amount: float, currency: str, bet_type: str):
@@ -38,7 +38,7 @@ class BasketballGame(TelegramDiceGame):
             "multiplier": multiplier,
             "details": {
                 "value": value,
-                "outcome": "Гол ✅" if is_goal else "Мимо ❌",
+                "outcome": "Гол ⚽" if is_goal else "Мимо ❌",
                 "bet": self.bet_type
             }
         }

@@ -5,8 +5,8 @@ class FootballGame(TelegramDiceGame):
     """
     ⚽️ Футбол (1-5)
     
-    4-5 - Гол (1.3x)
-    1-3 - Мимо (1.8x)
+    4-5 - Гол (1.8x)  # ✅ ИСПРАВЛЕНО с 1.3x на 1.8x
+    1-2-3 - Мимо (1.3x)  # ✅ ИСПРАВЛЕНО с 1.8x на 1.3x
     """
     
     def __init__(self, bet_amount: float, currency: str, bet_type: str):
@@ -16,7 +16,7 @@ class FootballGame(TelegramDiceGame):
         self.bet_type = bet_type
     
     def get_emoji(self) -> str:
-        return "⚽"
+        return "⚽️"
     
     def analyze_result(self, value: int, user_bet: dict) -> Dict:
         """Проверяет выигрыш"""
@@ -25,7 +25,7 @@ class FootballGame(TelegramDiceGame):
         
         if (self.bet_type == "goal" and is_goal) or (self.bet_type == "miss" and not is_goal):
             result = "win"
-            multiplier = 1.3 if self.bet_type == "goal" else 1.8
+            multiplier = 1.8 if self.bet_type == "goal" else 1.3  # ✅ ИСПРАВЛЕНО
         else:
             result = "loss"
             multiplier = 0
@@ -38,7 +38,7 @@ class FootballGame(TelegramDiceGame):
             "multiplier": multiplier,
             "details": {
                 "value": value,
-                "outcome": "Гол ⚽" if is_goal else "Мимо ❌",
+                "outcome": "Гол ⚽️" if is_goal else "Мимо ❌",
                 "bet": self.bet_type
             }
         }

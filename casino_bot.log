@@ -527,3 +527,7 @@ keyboard
 2025-10-05 16:46:45 - aiogram.event - INFO - Update id=741725562 is not handled. Duration 0 ms by bot id=8196057136
 2025-10-05 16:46:50 - aiogram.event - INFO - Update id=741725563 is not handled. Duration 0 ms by bot id=8196057136
 2025-10-05 16:46:51 - aiogram.event - INFO - Update id=741725564 is not handled. Duration 0 ms by bot id=8196057136
+2025-10-11 21:34:13 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-11 21:34:14 - __main__ - INFO - Инициализация базы данных...
+2025-10-11 21:34:14 - __main__ - INFO - База данных инициализирована!
+2025-10-11 21:34:14 - __main__ - INFO - Инициализация бота...

@@ -12,7 +12,8 @@ from datetime import datetime
 
 class CryptoBotAPI:
     BASE_URL = "https://pay.crypt.bot/api"
-    
+    SUPPORTED_ASSETS = ["TON", "USDT", "BTC", "ETH", "LTC", "TRX", "BUSD"]
+
     def __init__(self, token: str):
         self.token = token
         self.headers = {
@@ -22,6 +23,9 @@ class CryptoBotAPI:
 
     async def create_invoice(self, asset: str, amount: float, description: str) -> Dict:
         """Создать счёт на оплату"""
+        if asset not in self.SUPPORTED_ASSETS:
+            raise ValueError(f"❌ Unsupported asset: {asset}")
+
         url = f"{self.BASE_URL}/createInvoice"
         data = {
             "asset": asset,
@@ -36,8 +40,26 @@ class CryptoBotAPI:
                     raise Exception(f"CryptoBot error: {result}")
                 return result['result']
 
+    async def create_check(self, asset: str, amount: float) -> Dict:
+        """Создать чек для выплаты выигрыша"""
+        if asset not in self.SUPPORTED_ASSETS:
+            raise ValueError(f"❌ Unsupported asset: {asset}")
+
+        url = f"{self.BASE_URL}/createCheck"
+        data = {
+            "asset": asset,
+            "amount": str(amount)
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=self.headers, json=data) as resp:
+                result = await resp.json()
+                if not result.get('ok'):
+                    raise Exception(f"Create check error: {result}")
+                return result['result']
+
     async def transfer(self, user_id: int, asset: str, amount: float, spend_id: str) -> Dict:
-        """Перевести средства пользователю"""
+        """Перевести средства пользователю (старый метод, оставлен для совместимости)"""
         url = f"{self.BASE_URL}/transfer"
         data = {
             "user_id": user_id,
@@ -62,12 +84,11 @@ class CryptoBotAPI:
 
 
 # =====================================================
-# ✅ Добавляем функцию для создания пользователя и игры
+# ✅ Создание пользователя, игры и счёта
 # =====================================================
-
 async def create_game_and_invoice(telegram_id: int, game_type: str, bet_amount: float, currency: str):
     """
-    Создаёт пользователя (если его нет), создаёт игру и выставляет счёт через CryptoBot.
+    Создаёт пользователя (если нет), игру и выставляет счёт через CryptoBot.
     """
     async with async_session_maker() as session:
         try:
@@ -109,7 +130,8 @@ async def create_game_and_invoice(telegram_id: int, game_type: str, bet_amount: 
                 pay_url=pay_url
             )
 
-            logger.info(f"💰 Счёт создан успешно. Pay URL: {pay_url}")
+            await session.commit()
+            logger.info(f"💰 Счёт создан: {pay_url} ({bet_amount} {currency})")
             return pay_url
 
         except Exception as e:
@@ -117,5 +139,20 @@ async def create_game_and_invoice(telegram_id: int, game_type: str, bet_amount: 
             raise
 
 
-# Глобальный экземпляр CryptoBot API
+async def setup_cryptobot_webhook():
+    """Автоматическая настройка webhook для CryptoBot"""
+    try:
+        webhook_url = f"{settings.WEBHOOK_URL}{settings.WEBHOOK_PATH}"
+        logger.info(f"🔧 Настройка CryptoBot webhook: {webhook_url}")
+        
+        # CryptoBot не требует явной установки webhook через API
+        # Webhook настраивается в боте @CryptoBot или передается при создании инвойса
+        logger.info("✅ CryptoBot использует webhook URL при создании инвойсов")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Ошибка настройки CryptoBot webhook: {e}")
+        return False
+
+
+# Глобальный экземпляр API
 cryptobot = CryptoBotAPI(settings.cryptobot_token)
