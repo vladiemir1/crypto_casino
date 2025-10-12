@@ -3,6 +3,7 @@ import json
 import traceback
 import uuid
 import logging
+import aiohttp
 
 from database.database import async_session_maker
 from database.crud import TransactionCRUD, GameCRUD, UserCRUD
@@ -80,8 +81,19 @@ def setup_webhooks(app: FastAPI):
 
     logger.info("Webhook endpoints registered")
 
-
-# --- Обработка платежа ---
+async def get_usd_to_rub_rate():
+    """Получает текущий курс USD -> RUB через API"""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://api.exchangerate-api.com/v4/latest/USD', timeout=5) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    return data.get('rates', {}).get('RUB', 82.0)  # Дефолт 95 если не получилось
+    except Exception as e:
+        logger.error(f"Ошибка получения курса USD/RUB: {e}")
+    return 82.0  # Запасной курс
+    
+    # --- Обработка платежа ---
 async def process_payment(payload: dict):
     logger.info(f"Начало обработки платежа: {payload}")
     try:
@@ -159,8 +171,10 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx):
         async with async_session_maker() as session:
             await GameCRUD.complete_game(session, game, result_enum, payout)
 
-        # --- ✅ Обновляем статус игры на COMPLETED ---
         await mark_game_completed(game.game_id)
+
+        # Получаем информацию об игре
+        game_info = GAME_DESCRIPTIONS.get(game.game_type, {'emoji': '🎮', 'name': game.game_type, 'coef': '?'})
 
         # --- Выплата ---
         if payout > 0:
@@ -168,17 +182,21 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx):
                 check_result = await cryptobot.create_check(asset=game.currency, amount=payout)
                 check_url = check_result.get('bot_check_url') or check_result.get('url')
 
+                # Получаем курс USD/RUB
+                usd_to_rub = await get_usd_to_rub_rate()
+                payout_rub = payout * usd_to_rub
+
                 logger.info(f"✅ Чек на {payout} {game.currency} создан: {check_url}")
                 keyboard = InlineKeyboardMarkup(inline_keyboard=[[
                     InlineKeyboardButton(text="💰 Получить выигрыш", url=check_url)
                 ]])
 
+                # ✅ КРАСИВОЕ СООБЩЕНИЕ О ВЫИГРЫШЕ
                 await bot.send_message(
                     user_telegram_id,
-                    f"🎉 <b>Поздравляем с победой!</b>\n\n"
-                    f"🎲 Результат: <b>{dice_value}</b>\n"
-                    f"💰 Вы выиграли: <b>{payout} {game.currency}</b>\n\n"
-                    f"Нажмите кнопку, чтобы получить деньги 👇",
+                    f"🎉 <b>Вы выиграли {payout:.2f} USD ({payout_rub:.2f} RUB)!</b>\n\n"
+                    f"💸 Ваш выигрыш успешно зачислен на ваш CryptoBot кошелёк.\n"
+                    f"🚀 Удачи в следующих ставках!",
                     reply_markup=keyboard,
                     parse_mode="HTML"
                 )
@@ -190,9 +208,12 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx):
                     parse_mode="HTML"
                 )
         else:
+            # Сообщение о проигрыше
             await bot.send_message(
                 user_telegram_id,
-                f"🎲 Результат: <b>{dice_value}</b>\n❌ Проигрыш",
+                f"❌ <b>Проигрыш</b>\n\n"
+                f"{game_info['emoji']} Результат: <b>{dice_value}</b>\n\n"
+                f"Попробуй еще раз! Удача на твоей стороне 🍀",
                 parse_mode="HTML"
             )
 
@@ -200,6 +221,9 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx):
         logger.error(f"Исключение в send_dice_and_wait_result: {exc}")
         traceback.print_exc()
         await bot.send_message(user_telegram_id, f"❌ Ошибка обработки игры: {exc}", parse_mode="HTML")
+
+
+
 
 
 # --- Результаты ---

@@ -1,3 +1,5 @@
+# ==================== keyboards.py - ИСПРАВЛЕННАЯ ВЕРСИЯ ====================
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
 # ==================== ГЛАВНОЕ МЕНЮ ====================
@@ -18,17 +20,17 @@ def get_main_menu():
 def get_games_menu():
     """Меню выбора игры"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="🎲 Кости", callback_data="game_dice")],
-    [
-        InlineKeyboardButton(text="🎯 Дартс", callback_data="game_darts"),
-        InlineKeyboardButton(text="🏀 Баскетбол", callback_data="game_basketball")
-    ],
-    [
-        InlineKeyboardButton(text="⚽️ Футбол", callback_data="game_football"),
-        InlineKeyboardButton(text="🎳 Боулинг", callback_data="game_bowling")
-    ],
-    [InlineKeyboardButton(text="🏠 Главное меню", callback_data="back_main")]
-])
+        [InlineKeyboardButton(text="🎲 Кости", callback_data="game_dice")],
+        [
+            InlineKeyboardButton(text="🎯 Дартс", callback_data="game_darts"),
+            InlineKeyboardButton(text="🏀 Баскетбол", callback_data="game_basketball")
+        ],
+        [
+            InlineKeyboardButton(text="⚽️ Футбол", callback_data="game_football"),
+            InlineKeyboardButton(text="🎳 Боулинг", callback_data="game_bowling")
+        ],
+        [InlineKeyboardButton(text="🏠 Главное меню", callback_data="back_main")]
+    ])
     return keyboard
 
 # ==================== КОСТИ ====================
@@ -36,17 +38,17 @@ def get_games_menu():
 def get_dice_bet_types():
     """Типы ставок для костей"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [
-        InlineKeyboardButton(text="⬆️ Больше (4-5-6) - 1.8x", callback_data="dice_high"),
-        InlineKeyboardButton(text="⬇️ Меньше (1-2-3) - 1.8x", callback_data="dice_low")
-    ],
-    [   InlineKeyboardButton(text="1️⃣ Нечетное - 1.8x", callback_data="dice_odd"),
-        InlineKeyboardButton(text="2️⃣ Четное - 1.8x", callback_data="dice_even")
-        
-    ],
-    [InlineKeyboardButton(text="🎯 Угадать число - 3.1x", callback_data="dice_exact")],
-    [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_games")]
-])
+        [
+            InlineKeyboardButton(text="⬆️ Больше (4-5-6) - 1.8x", callback_data="dice_high"),
+            InlineKeyboardButton(text="⬇️ Меньше (1-2-3) - 1.8x", callback_data="dice_low")
+        ],
+        [
+            InlineKeyboardButton(text="1️⃣ Нечетное - 1.8x", callback_data="dice_odd"),
+            InlineKeyboardButton(text="2️⃣ Четное - 1.8x", callback_data="dice_even")
+        ],
+        [InlineKeyboardButton(text="🎯 Угадать число - 3.1x", callback_data="dice_exact")],
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_games")]
+    ])
     return keyboard
 
 def get_dice_exact_numbers():
@@ -90,13 +92,13 @@ def get_basketball_bet_types():
     ])
     return keyboard
 
-# ==================== ФУТБОЛ ====================  ✅ ИСПРАВЛЕНО!
+# ==================== ФУТБОЛ ====================
 
-def get_football_bet_types():  # ОШИБКА: опечатка в названии (ф вместо f)
+def get_football_bet_types():
     """Типы ставок для футбола"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ Гол (4-5) - 1.8x", callback_data="football_goal")],  # ✅ ИСПРАВЛЕНО: было 1.3x
-        [InlineKeyboardButton(text="❌ Мимо (1-2-3) - 1.3x", callback_data="football_miss")],  # ✅ ИСПРАВЛЕНО: было 1.8x
+        [InlineKeyboardButton(text="✅ Гол (4-5) - 1.8x", callback_data="football_goal")],
+        [InlineKeyboardButton(text="❌ Мимо (1-2-3) - 1.3x", callback_data="football_miss")],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_games")]
     ])
     return keyboard
@@ -112,10 +114,13 @@ def get_bowling_bet_types():
     ])
     return keyboard
 
-# ==================== СУММА СТАВКИ ====================  ✅ НОВОЕ!
+# ==================== СУММА СТАВКИ ====================
 
-def get_amount_keyboard():
-    """Быстрые кнопки для выбора суммы"""
+def get_amount_keyboard(game_type: str = ""):
+    """
+    Быстрые кнопки для выбора суммы.
+    game_type используется для правильной навигации назад
+    """
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="0.5 USDT", callback_data="amount_0.5"),
@@ -128,14 +133,17 @@ def get_amount_keyboard():
             InlineKeyboardButton(text="100 USDT", callback_data="amount_100")
         ],
         [InlineKeyboardButton(text="✍️ Своя сумма", callback_data="amount_custom")],
-        [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")]
+        [InlineKeyboardButton(text="◀️ Назад", callback_data=f"back_to_bet_{game_type}")]
     ])
     return keyboard
 
-# ==================== ВАЛЮТА ====================  ✅ НОВОЕ!
+# ==================== ВАЛЮТА ====================
 
-def get_currency_keyboard():
-    """Выбор валюты для оплаты"""
+def get_currency_keyboard(game_type: str = ""):
+    """
+    Выбор валюты для оплаты.
+    game_type используется для правильной навигации назад
+    """
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="USDT", callback_data="currency_USDT"),
@@ -148,6 +156,6 @@ def get_currency_keyboard():
             InlineKeyboardButton(text="TRX", callback_data="currency_TRX")
         ],
         [InlineKeyboardButton(text="BUSD", callback_data="currency_BUSD")],
-        [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")]
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_amount")]
     ])
     return keyboard
