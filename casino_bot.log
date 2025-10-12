@@ -733,3 +733,7 @@ keyboard
 2025-10-12 15:09:37 - __main__ - INFO - Webhook сервер запущен на http://0.0.0.0:8000
 2025-10-12 15:09:37 - __main__ - INFO - Webhook URL: https://twelve-ducks-check.loca.lt/webhook-secret-path
 2025-10-12 15:09:42 - __main__ - INFO - Бот остановлен
+2025-10-12 16:33:26 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-12 16:33:26 - __main__ - INFO - Инициализация базы данных...
+2025-10-12 16:33:26 - __main__ - INFO - База данных инициализирована!
+2025-10-12 16:33:26 - __main__ - INFO - Инициализация бота...
