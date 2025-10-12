@@ -723,3 +723,13 @@ keyboard
 2025-10-12 14:13:14 - aiogram.event - INFO - Update id=741726254 is handled. Duration 406 ms by bot id=8196057136
 2025-10-12 14:13:14 - payment.webhook - INFO - Обновление передано в роутеры для обработки
 2025-10-12 15:06:03 - __main__ - INFO - Бот остановлен
+2025-10-12 15:09:35 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-12 15:09:36 - __main__ - INFO - Инициализация базы данных...
+2025-10-12 15:09:36 - __main__ - INFO - База данных инициализирована!
+2025-10-12 15:09:36 - __main__ - INFO - Инициализация бота...
+2025-10-12 15:09:37 - payment.webhook - INFO - Экземпляр бота успешно установлен
+2025-10-12 15:09:37 - payment.webhook - INFO - Dispatcher успешно установлен
+2025-10-12 15:09:37 - __main__ - INFO - Telegram webhook установлен: https://twelve-ducks-check.loca.lt/webhook-secret-path
+2025-10-12 15:09:37 - __main__ - INFO - Webhook сервер запущен на http://0.0.0.0:8000
+2025-10-12 15:09:37 - __main__ - INFO - Webhook URL: https://twelve-ducks-check.loca.lt/webhook-secret-path
+2025-10-12 15:09:42 - __main__ - INFO - Бот остановлен
