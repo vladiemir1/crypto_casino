@@ -759,3 +759,32 @@ keyboard
 2025-10-12 16:33:47 - aiogram.event - INFO - Update id=741726258 is handled. Duration 327 ms by bot id=8196057136
 2025-10-12 16:33:47 - payment.webhook - INFO - Обновление передано в роутеры для обработки
 2025-10-12 16:34:32 - __main__ - INFO - Бот остановлен
+2025-10-14 17:39:58 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-14 17:39:58 - __main__ - INFO - Инициализация базы данных...
+2025-10-14 17:39:59 - __main__ - INFO - База данных инициализирована!
+2025-10-14 17:39:59 - __main__ - INFO - Инициализация бота...
+2025-10-14 17:40:00 - payment.webhook - INFO - Экземпляр бота успешно установлен
+2025-10-14 17:40:00 - payment.webhook - INFO - Dispatcher успешно установлен
+2025-10-14 17:40:00 - __main__ - INFO - Telegram webhook установлен: https://twelve-ducks-check.loca.lt/webhook-secret-path
+2025-10-14 17:40:00 - __main__ - INFO - Webhook сервер запущен на http://0.0.0.0:8000
+2025-10-14 17:40:00 - __main__ - INFO - Webhook URL: https://twelve-ducks-check.loca.lt/webhook-secret-path
+2025-10-14 17:40:07 - payment.webhook - INFO - Получен запрос webhook: {"update_id":741726260,
+"message":{"message_id":1068,"from":{"id":816745533,"is_bot":false,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","language_code":"ru"},"chat":{"id":816745533,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","type":"private"},"date":1760449212,"text":"\ud83c\udfb0 \u0418\u0433\u0440\u0430\u0442\u044c"}}
+2025-10-14 17:40:07 - aiogram.event - INFO - Update id=741726260 is handled. Duration 156 ms by bot id=8196057136
+2025-10-14 17:40:07 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 17:40:10 - payment.webhook - INFO - Получен запрос webhook: {"update_id":741726261,
+"message":{"message_id":1070,"from":{"id":816745533,"is_bot":false,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","language_code":"ru"},"chat":{"id":816745533,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","type":"private"},"date":1760449214,"text":"\ud83d\udcca \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0430"}}
+2025-10-14 17:40:10 - aiogram.event - INFO - Update id=741726261 is handled. Duration 266 ms by bot id=8196057136
+2025-10-14 17:40:10 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 17:40:56 - payment.webhook - INFO - Получен запрос webhook: {"update_id":741726262,
+"message":{"message_id":1072,"from":{"id":816745533,"is_bot":false,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","language_code":"ru"},"chat":{"id":816745533,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","type":"private"},"date":1760449261,"text":"\u2139\ufe0f \u041f\u043e\u043c\u043e\u0449\u044c"}}
+2025-10-14 17:40:57 - aiogram.event - INFO - Update id=741726262 is handled. Duration 342 ms by bot id=8196057136
+2025-10-14 17:40:57 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 17:41:11 - payment.webhook - INFO - Получен запрос webhook: {"update_id":741726263,
+"message":{"message_id":1074,"from":{"id":816745533,"is_bot":false,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","language_code":"ru"},"chat":{"id":816745533,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","type":"private"},"date":1760449276,"text":"\ud83c\udfb0 \u0418\u0433\u0440\u0430\u0442\u044c"}}
+2025-10-14 17:41:12 - aiogram.event - INFO - Update id=741726263 is handled. Duration 109 ms by bot id=8196057136
+2025-10-14 17:41:12 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 17:41:13 - payment.webhook - INFO - Получен запрос webhook: {"update_id":741726264,
+"callback_query":{"id":"3507895353794024050","from":{"id":816745533,"is_bot":false,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","language_code":"ru"},"message":{"message_id":1075,"from":{"id":8196057136,"is_bot":true,"first_name":"Chad121Bot","username":"Chad121Bot"},"chat":{"id":816745533,"first_name":"\u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440","username":"vla_diemir","type":"private"},"date":1760449276,"text":"\ud83c\udfae \u0412\u044b\u0431\u0435\u0440\u0438 \u0438\u0433\u0440\u0443:","entities":[{"offset":3,"length":12,"type":"bold"}],"reply_markup":{"inline_keyboard":[[{"text":"\ud83c\udfb2 \u041a\u043e\u0441\u0442\u0438","callback_data":"game_dice"}],[{"text":"\ud83c\udfaf \u0414\u0430\u0440\u0442\u0441","callback_data":"game_darts"},{"text":"\ud83c\udfc0 \u0411\u0430\u0441\u043a\u0435\u0442\u0431\u043e\u043b","callback_data":"game_basketball"}],[{"text":"\u26bd\ufe0f \u0424\u0443\u0442\u0431\u043e\u043b","callback_data":"game_football"},{"text":"\ud83c\udfb3 \u0411\u043e\u0443\u043b\u0438\u043d\u0433","callback_data":"game_bowling"}],[{"text":"\ud83c\udfe0 \u0413\u043b\u0430\u0432\u043d\u043e\u0435 \u043c\u0435\u043d\u044e","callback_data":"back_main"}]]}},"chat_instance":"4331652692643955885","data":"game_dice"}}
+2025-10-14 17:41:13 - aiogram.event - INFO - Update id=741726264 is handled. Duration 281 ms by bot id=8196057136
+2025-10-14 17:41:13 - payment.webhook - INFO - Обновление передано в роутеры для обработки
