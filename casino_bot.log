@@ -759,3 +759,87 @@ keyboard
 2025-10-12 16:33:47 - aiogram.event - INFO - Update id=741726258 is handled. Duration 327 ms by bot id=8196057136
 2025-10-12 16:33:47 - payment.webhook - INFO - Обновление передано в роутеры для обработки
 2025-10-12 16:34:32 - __main__ - INFO - Бот остановлен
+2025-10-12 17:05:14 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-12 17:05:14 - __main__ - INFO - Инициализация базы данных...
+2025-10-12 17:05:15 - __main__ - INFO - База данных инициализирована!
+2025-10-12 17:05:15 - __main__ - INFO - Инициализация бота...
+2025-10-12 17:05:15 - payment.webhook - INFO - Экземпляр бота успешно установлен
+2025-10-12 17:05:15 - payment.webhook - INFO - Dispatcher успешно установлен
+2025-10-12 17:05:17 - __main__ - INFO - Telegram webhook установлен: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-12 17:05:17 - __main__ - INFO - Webhook сервер запущен на http://0.0.0.0:8000
+2025-10-12 17:05:17 - __main__ - INFO - Webhook URL: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-12 17:06:41 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-12 17:06:42 - __main__ - INFO - Инициализация базы данных...
+2025-10-12 17:06:42 - __main__ - INFO - База данных инициализирована!
+2025-10-12 17:06:42 - __main__ - INFO - Инициализация бота...
+2025-10-12 17:06:42 - payment.webhook - INFO - Экземпляр бота успешно установлен
+2025-10-12 17:06:42 - payment.webhook - INFO - Dispatcher успешно установлен
+2025-10-12 17:07:42 - __main__ - ERROR - Ошибка при инициализации: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [None]
+2025-10-12 17:08:42 - asyncio - ERROR - Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x000001B9A3725E50>
+2025-10-12 17:11:54 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-12 17:11:54 - __main__ - INFO - Инициализация базы данных...
+2025-10-12 17:11:54 - __main__ - INFO - База данных инициализирована!
+2025-10-12 17:11:54 - __main__ - INFO - Инициализация бота...
+2025-10-12 17:11:54 - payment.webhook - INFO - Экземпляр бота успешно установлен
+2025-10-12 17:11:54 - payment.webhook - INFO - Dispatcher успешно установлен
+2025-10-12 17:11:54 - __main__ - INFO - Telegram webhook установлен: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-12 17:11:54 - __main__ - INFO - Webhook сервер запущен на http://0.0.0.0:8000
+2025-10-12 17:11:54 - __main__ - INFO - Webhook URL: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-14 10:51:55 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-14 10:51:56 - __main__ - INFO - Инициализация базы данных...
+2025-10-14 10:51:56 - __main__ - INFO - База данных инициализирована!
+2025-10-14 10:51:56 - __main__ - INFO - Инициализация бота...
+2025-10-14 10:51:56 - payment.webhook - INFO - Экземпляр бота успешно установлен
+2025-10-14 10:51:56 - payment.webhook - INFO - Dispatcher успешно установлен
+2025-10-14 10:51:56 - __main__ - INFO - Telegram webhook установлен: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-14 10:51:56 - __main__ - INFO - Webhook сервер запущен на http://0.0.0.0:8000
+2025-10-14 10:51:56 - __main__ - INFO - Webhook URL: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-14 10:51:57 - payment.webhook - INFO - Получен запрос webhook: {"update_id":593930252,
+"message":{"message_id":230,"from":{"id":1335578637,"is_bot":false,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","language_code":"ru"},"chat":{"id":1335578637,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","type":"private"},"date":1760424498,"text":"\ud83c\udfb0 \u0418\u0433\u0440\u0430\u0442\u044c"}}
+2025-10-14 10:51:57 - aiogram.event - INFO - Update id=593930252 is handled. Duration 141 ms by bot id=8278450401
+2025-10-14 10:51:57 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 10:52:28 - payment.webhook - INFO - Получен запрос webhook: {"update_id":593930253,
+"message":{"message_id":232,"from":{"id":1335578637,"is_bot":false,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","language_code":"ru"},"chat":{"id":1335578637,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","type":"private"},"date":1760424740,"text":"\ud83c\udfb0 \u0418\u0433\u0440\u0430\u0442\u044c"}}
+2025-10-14 10:52:28 - aiogram.event - INFO - Update id=593930253 is handled. Duration 235 ms by bot id=8278450401
+2025-10-14 10:52:28 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 10:52:30 - payment.webhook - INFO - Получен запрос webhook: {"update_id":593930254,
+"callback_query":{"id":"5736266570796117532","from":{"id":1335578637,"is_bot":false,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","language_code":"ru"},"message":{"message_id":233,"from":{"id":8278450401,"is_bot":true,"first_name":"CasinoBot","username":"qeqeqr_bot"},"chat":{"id":1335578637,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","type":"private"},"date":1760424740,"text":"\ud83c\udfae \u0412\u044b\u0431\u0435\u0440\u0438 \u0438\u0433\u0440\u0443:","entities":[{"offset":3,"length":12,"type":"bold"}],"reply_markup":{"inline_keyboard":[[{"text":"\ud83c\udfb2 \u041a\u043e\u0441\u0442\u0438","callback_data":"game_dice"}],[{"text":"\ud83c\udfaf \u0414\u0430\u0440\u0442\u0441","callback_data":"game_darts"},{"text":"\ud83c\udfc0 \u0411\u0430\u0441\u043a\u0435\u0442\u0431\u043e\u043b","callback_data":"game_basketball"}],[{"text":"\u26bd\ufe0f \u0424\u0443\u0442\u0431\u043e\u043b","callback_data":"game_football"},{"text":"\ud83c\udfb3 \u0411\u043e\u0443\u043b\u0438\u043d\u0433","callback_data":"game_bowling"}],[{"text":"\ud83c\udfe0 \u0413\u043b\u0430\u0432\u043d\u043e\u0435 \u043c\u0435\u043d\u044e","callback_data":"back_main"}]]}},"chat_instance":"1813364399482758907","data":"game_dice"}}
+2025-10-14 10:52:30 - aiogram.event - INFO - Update id=593930254 is handled. Duration 156 ms by bot id=8278450401
+2025-10-14 10:52:30 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 10:52:32 - payment.webhook - INFO - Получен запрос webhook: {"update_id":593930255,
+"callback_query":{"id":"5736266570672339312","from":{"id":1335578637,"is_bot":false,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","language_code":"ru"},"message":{"message_id":234,"from":{"id":8278450401,"is_bot":true,"first_name":"CasinoBot","username":"qeqeqr_bot"},"chat":{"id":1335578637,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","type":"private"},"date":1760424742,"text":"\ud83c\udfb2 \u041a\u041e\u0421\u0422\u0418\n\n\u0412\u044b\u0431\u0435\u0440\u0438 \u0442\u0438\u043f \u0441\u0442\u0430\u0432\u043a\u0438:","entities":[{"offset":3,"length":5,"type":"bold"}],"reply_markup":{"inline_keyboard":[[{"text":"\u2b06\ufe0f \u0411\u043e\u043b\u044c\u0448\u0435 (4-5-6) - 1.8x","callback_data":"dice_high"},{"text":"\u2b07\ufe0f \u041c\u0435\u043d\u044c\u0448\u0435 (1-2-3) - 1.8x","callback_data":"dice_low"}],[{"text":"1\ufe0f\u20e3 \u041d\u0435\u0447\u0435\u0442\u043d\u043e\u0435 - 1.8x","callback_data":"dice_odd"},{"text":"2\ufe0f\u20e3 \u0427\u0435\u0442\u043d\u043e\u0435 - 1.8x","callback_data":"dice_even"}],[{"text":"\ud83c\udfaf \u0423\u0433\u0430\u0434\u0430\u0442\u044c \u0447\u0438\u0441\u043b\u043e - 3.1x","callback_data":"dice_exact"}],[{"text":"\u25c0\ufe0f \u041d\u0430\u0437\u0430\u0434","callback_data":"back_to_games"}]]}},"chat_instance":"1813364399482758907","data":"dice_high"}}
+2025-10-14 10:52:33 - aiogram.event - INFO - Update id=593930255 is handled. Duration 343 ms by bot id=8278450401
+2025-10-14 10:52:33 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 10:52:34 - payment.webhook - INFO - Получен запрос webhook: {"update_id":593930256,
+"callback_query":{"id":"5736266568993151648","from":{"id":1335578637,"is_bot":false,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","language_code":"ru"},"message":{"message_id":235,"from":{"id":8278450401,"is_bot":true,"first_name":"CasinoBot","username":"qeqeqr_bot"},"chat":{"id":1335578637,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","type":"private"},"date":1760424745,"text":"\ud83c\udfb2 \u041a\u041e\u0421\u0422\u0418: \u0411\u043e\u043b\u044c\u0448\u0435 (4-5-6)\n\ud83d\udcb0 \u041a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442: 1.8x\n\n\u0412\u044b\u0431\u0435\u0440\u0438 \u0441\u0443\u043c\u043c\u0443 \u0441\u0442\u0430\u0432\u043a\u0438 (\u043c\u0438\u043d\u0438\u043c\u0443\u043c 0.05 USD):","entities":[{"offset":3,"length":21,"type":"bold"},{"offset":41,"length":4,"type":"bold"}],"reply_markup":{"inline_keyboard":[[{"text":"0.5 USDT","callback_data":"amount_0.5"},{"text":"1 USDT","callback_data":"amount_1"},{"text":"5 USDT","callback_data":"amount_5"}],[{"text":"10 USDT","callback_data":"amount_10"},{"text":"50 USDT","callback_data":"amount_50"},{"text":"100 USDT","callback_data":"amount_100"}],[{"text":"\u270d\ufe0f \u0421\u0432\u043e\u044f \u0441\u0443\u043c\u043c\u0430","callback_data":"amount_custom"}],[{"text":"\u25c0\ufe0f \u041d\u0430\u0437\u0430\u0434","callback_data":"back_to_bet_dice_high"}]]}},"chat_instance":"1813364399482758907","data":"back_to_bet_dice_high"}}
+2025-10-14 10:52:35 - aiogram.event - INFO - Update id=593930256 is handled. Duration 250 ms by bot id=8278450401
+2025-10-14 10:52:35 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 10:52:36 - payment.webhook - INFO - Получен запрос webhook: {"update_id":593930257,
+"callback_query":{"id":"5736266568731765815","from":{"id":1335578637,"is_bot":false,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","language_code":"ru"},"message":{"message_id":235,"from":{"id":8278450401,"is_bot":true,"first_name":"CasinoBot","username":"qeqeqr_bot"},"chat":{"id":1335578637,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","type":"private"},"date":1760424745,"edit_date":1760424747,"text":"\ud83c\udfb2 \u041a\u041e\u0421\u0422\u0418\n\n\u0412\u044b\u0431\u0435\u0440\u0438 \u0442\u0438\u043f \u0441\u0442\u0430\u0432\u043a\u0438:","entities":[{"offset":3,"length":5,"type":"bold"}],"reply_markup":{"inline_keyboard":[[{"text":"\u2b06\ufe0f \u0411\u043e\u043b\u044c\u0448\u0435 (4-5-6) - 1.8x","callback_data":"dice_high"},{"text":"\u2b07\ufe0f \u041c\u0435\u043d\u044c\u0448\u0435 (1-2-3) - 1.8x","callback_data":"dice_low"}],[{"text":"1\ufe0f\u20e3 \u041d\u0435\u0447\u0435\u0442\u043d\u043e\u0435 - 1.8x","callback_data":"dice_odd"},{"text":"2\ufe0f\u20e3 \u0427\u0435\u0442\u043d\u043e\u0435 - 1.8x","callback_data":"dice_even"}],[{"text":"\ud83c\udfaf \u0423\u0433\u0430\u0434\u0430\u0442\u044c \u0447\u0438\u0441\u043b\u043e - 3.1x","callback_data":"dice_exact"}],[{"text":"\u25c0\ufe0f \u041d\u0430\u0437\u0430\u0434","callback_data":"back_to_games"}]]}},"chat_instance":"1813364399482758907","data":"back_to_games"}}
+2025-10-14 10:52:36 - aiogram.event - INFO - Update id=593930257 is handled. Duration 250 ms by bot id=8278450401
+2025-10-14 10:52:36 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 10:52:54 - __main__ - INFO - Бот остановлен
+2025-10-14 17:50:19 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-14 17:50:19 - __main__ - INFO - Инициализация базы данных...
+2025-10-14 17:50:19 - __main__ - INFO - База данных инициализирована!
+2025-10-14 17:50:19 - __main__ - INFO - Инициализация бота...
+2025-10-14 17:50:19 - payment.webhook - INFO - Экземпляр бота успешно установлен
+2025-10-14 17:50:19 - payment.webhook - INFO - Dispatcher успешно установлен
+2025-10-14 17:50:20 - __main__ - INFO - Telegram webhook установлен: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-14 17:50:20 - __main__ - INFO - Webhook сервер запущен на http://0.0.0.0:8000
+2025-10-14 17:50:20 - __main__ - INFO - Webhook URL: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-14 17:50:25 - payment.webhook - INFO - Получен запрос webhook: {"update_id":593930258,
+"message":{"message_id":236,"from":{"id":1335578637,"is_bot":false,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","language_code":"ru"},"chat":{"id":1335578637,"first_name":"\u041e\u043b\u0435\u0433","last_name":"\u041a\u043b\u0438\u043c\u043e\u0432","username":"Aaaoooaaaooouuu","type":"private"},"date":1760449816,"text":"\ud83c\udfb0 \u0418\u0433\u0440\u0430\u0442\u044c"}}
+2025-10-14 17:50:25 - aiogram.event - INFO - Update id=593930258 is handled. Duration 156 ms by bot id=8278450401
+2025-10-14 17:50:25 - payment.webhook - INFO - Обновление передано в роутеры для обработки
+2025-10-14 17:50:29 - __main__ - INFO - Бот остановлен
+2025-10-14 17:52:07 - payment.webhook - INFO - Webhook endpoints registered
+2025-10-14 17:52:07 - __main__ - INFO - Инициализация базы данных...
+2025-10-14 17:52:07 - __main__ - INFO - База данных инициализирована!
+2025-10-14 17:52:07 - __main__ - INFO - Инициализация бота...
+2025-10-14 17:52:07 - payment.webhook - INFO - Экземпляр бота успешно установлен
+2025-10-14 17:52:07 - payment.webhook - INFO - Dispatcher успешно установлен
+2025-10-14 17:52:07 - __main__ - INFO - Telegram webhook установлен: https://twelve-ducks-chert.loca.lt/webhook-secret-path
+2025-10-14 17:52:07 - __main__ - INFO - Webhook сервер запущен на http://0.0.0.0:8000
+2025-10-14 17:52:07 - __main__ - INFO - Webhook URL: https://twelve-ducks-chert.loca.lt/webhook-secret-path
