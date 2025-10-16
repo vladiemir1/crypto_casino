@@ -438,7 +438,7 @@ async def process_amount_button(callback: CallbackQuery, state: FSMContext):
     if callback.data == "amount_custom":
         await callback.message.answer(
             f"✍️ Введи свою сумму (минимум {MIN_BET} USD):\n\n"
-            "<i>Пример: 0.1 или 2.5 или 10</i>",
+            "<i>Пример: 0.1 или 2.5 или 15</i>",
             parse_mode="HTML"
         )
         await callback.answer()
