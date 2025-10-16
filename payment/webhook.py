@@ -21,6 +21,24 @@ logger = logging.getLogger(__name__)
 bot = None
 dp = None
 
+# ✅ ДОБАВЛЯЕМ ОПРЕДЕЛЕНИЕ GAME_DESCRIPTIONS
+GAME_DESCRIPTIONS = {
+    "dice_high": {"emoji": "🎲", "name": "Больше (4-5-6)", "coef": "1.8x"},
+    "dice_low": {"emoji": "🎲", "name": "Меньше (1-2-3)", "coef": "1.8x"},
+    "dice_even": {"emoji": "🎲", "name": "Четное", "coef": "1.8x"},
+    "dice_odd": {"emoji": "🎲", "name": "Нечетное", "coef": "1.8x"},
+    "dice_exact": {"emoji": "🎲", "name": "Точное число", "coef": "3.1x"},
+    "darts_red": {"emoji": "🎯", "name": "Красное", "coef": "1.8x"},
+    "darts_white": {"emoji": "🎯", "name": "Белое", "coef": "1.8x"},
+    "darts_6": {"emoji": "🎯", "name": "Попадание в 6", "coef": "2.5x"},
+    "darts_1": {"emoji": "🎯", "name": "Попадание в 1", "coef": "2.5x"},
+    "basketball_goal": {"emoji": "🏀", "name": "Попадание", "coef": "1.8x"},
+    "basketball_miss": {"emoji": "🏀", "name": "Промах", "coef": "1.3x"},
+    "football_goal": {"emoji": "⚽", "name": "Гол", "coef": "1.8x"},
+    "football_miss": {"emoji": "⚽", "name": "Промах", "coef": "1.3x"},
+    "bowling_strike": {"emoji": "🎳", "name": "Страйк", "coef": "4.0x"},
+    "bowling_nonstrike": {"emoji": "🎳", "name": "Не страйк", "coef": "1.2x"}
+}
 
 # --- ✅ Новая функция ---
 async def mark_game_completed(game_id: int):
@@ -173,7 +191,7 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx):
 
         await mark_game_completed(game.game_id)
 
-        # Получаем информацию об игре
+        # ✅ ТЕПЕРЬ GAME_DESCRIPTIONS ОПРЕДЕЛЕНА
         game_info = GAME_DESCRIPTIONS.get(game.game_type, {'emoji': '🎮', 'name': game.game_type, 'coef': '?'})
 
         # --- Выплата ---
