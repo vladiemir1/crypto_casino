@@ -2,7 +2,7 @@
 *.pyc
 __pycache__
 
-# Игнорировать виртуальные окружения
+# Игнорировать виртуальные окружения git config --global user.name "FIRST_NAME LAST_NAME",
 venv/
 env/
 .venv*/
