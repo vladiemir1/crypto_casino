@@ -7,6 +7,7 @@ import logging
 from datetime import datetime
 from sqlalchemy.sql import text
 from aiocryptopay import Networks
+from asyncio import sleep
 
 from .keyboards import *
 from .states import BetFlow
@@ -24,7 +25,6 @@ logger = logging.getLogger(__name__)
 def set_bot(bot):
     global bot_instance
     bot_instance = bot
-
 
 GAME_DESCRIPTIONS = {
     'dice_high': {'emoji': '🎲', 'name': 'КОСТИ: Больше (4-5-6)', 'coef': '1.8x'},
@@ -49,7 +49,342 @@ GAME_DESCRIPTIONS = {
     'bowling_nonstrike': {'emoji': '🎳', 'name': 'БОУЛИНГ: Не страйк (1-5)', 'coef': '1.2x'},
 }
 
-# ==================== КОМАНДЫ ====================
+def get_game_description(game_type: str, amount: float = None) -> str:
+    """Генерирует описание игры на основе game_type и суммы"""
+    game_info = GAME_DESCRIPTIONS.get(game_type, {'emoji': '🎮', 'name': game_type, 'coef': '?'})
+    description = f"{game_info['emoji']} <b>{game_info['name']}</b>\n💰 Коэффициент: <b>{game_info['coef']}</b>"
+    if amount:
+        description += f"\n\n💵 Сумма ставки: <b>{amount} USD</b>"
+    return description
+
+# ==================== ОБРАБОТКА ВАЛЮТЫ ====================
+
+@router.callback_query(F.data.startswith("currency_"), BetFlow.choosing_currency)
+async def process_currency(callback: CallbackQuery, state: FSMContext):
+    """Обработка выбора валюты"""
+    currency = callback.data.replace("currency_", "")
+    
+    data = await state.get_data()
+    game_type = data.get("game_type")
+    description = data.get("description")
+    amount = data.get("amount")
+
+    try:
+        await create_game_and_invoice(callback, game_type, description, amount, currency, state)
+        await callback.answer()
+    except Exception as e:
+        logger.error(f"Ошибка при создании инвойса: {e}")
+        await callback.message.edit_text(
+            "Ошибка при создании счёта. Попробуй позже.",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_amount")
+            ]]),
+            parse_mode="HTML"
+        )
+        await callback.answer("Ошибка", show_alert=True)
+
+# ==================== СОЗДАНИЕ ИГРЫ И ИНВОЙСА ====================
+
+async def create_game_and_invoice(callback: CallbackQuery, game_type: str, description: str, amount: float, currency: str, state: FSMContext):
+    """Создаёт запись игры, инвойс и обновляет существующее сообщение"""
+    async with async_session_maker() as session:
+        user = await UserCRUD.get_or_create(
+            session,
+            telegram_id=callback.from_user.id,
+            username=callback.from_user.username or "Unknown",
+            first_name=callback.from_user.first_name or "User"
+        )
+
+        game_id = str(uuid.uuid4())
+        
+        game = await GameCRUD.create(
+            session=session,
+            game_id=game_id,
+            user_id=user.id,
+            game_type=game_type,
+            bet_amount=amount,
+            currency=currency
+        )
+
+        try:
+            invoice_response = await cryptobot.create_invoice(
+                asset=currency,
+                amount=str(amount),
+                description=f"Ставка в казино: {game_type}"
+            )
+        except Exception as e:
+            logger.error(f"Ошибка при создании инвойса: {e}")
+            raise
+
+        invoice_id = str(invoice_response.get('invoice_id') or invoice_response.get('id') or uuid.uuid4())
+        pay_url = invoice_response.get('bot_invoice_url') or invoice_response.get('pay_url') or invoice_response.get('url')
+
+        if not pay_url:
+            logger.error("Не удалось получить URL для оплаты")
+            raise ValueError("Не удалось получить URL для оплаты")
+
+        await TransactionCRUD.create(
+            session=session,
+            user_id=user.id,
+            invoice_id=invoice_id,
+            amount=amount,
+            currency=currency,
+            status=TransactionStatus.PENDING,
+            game_id=game_id,
+            pay_url=pay_url
+        )
+
+        # Получаем информацию об игре
+        game_info = GAME_DESCRIPTIONS.get(game_type, {'emoji': '🎮', 'name': game_type, 'coef': '?'})
+        
+        # Расчёт комиссии и чистой ставки
+        commission = amount * 0.10
+        net_bet = amount * 0.90
+        
+        await session.commit()
+
+        # Сохраняем ID сообщения и данные инвойса в state
+        await state.update_data(
+            invoice_message_id=callback.message.message_id,
+            game_id=game_id,
+            invoice_id=invoice_id,
+            pay_url=pay_url,
+            game_type=game_type,
+            amount=amount,
+            currency=currency,
+            description=description
+        )
+
+        # Обновляем существующее сообщение
+        try:
+            await callback.message.edit_text(
+                f"<b>Счёт создан!</b>\n\n"
+                f"{game_info['emoji']} Игра: <b>{game_info['name']}</b>\n"
+                f"⚡️ Коэффициент: <b>{game_info['coef']}</b>\n\n"
+                f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
+                f"🏦 Комиссия казино: <b>{commission:.4f} {currency}</b> (10%)\n"
+                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b>\n\n"
+                f"Оплати счёт по кнопке ниже:",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="💳 Оплатить", url=pay_url),
+                    InlineKeyboardButton(text="🔄 Проверить оплату", callback_data=f"check_payment_{invoice_id}")
+                ]]),
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.error(f"Ошибка при редактировании сообщения: {e}")
+            # Fallback: отправляем новое сообщение
+            new_message = await callback.message.answer(
+                f"<b>Счёт создан!</b>\n\n"
+                f"{game_info['emoji']} Игра: <b>{game_info['name']}</b>\n"
+                f"⚡️ Коэффициент: <b>{game_info['coef']}</b>\n\n"
+                f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
+                f"🏦 Комиссия казино: <b>{commission:.4f} {currency}</b> (10%)\n"
+                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b>\n\n"
+                f"Оплати счёт по кнопке ниже:",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="💳 Оплатить", url=pay_url),
+                    InlineKeyboardButton(text="🔄 Проверить оплату", callback_data=f"check_payment_{invoice_id}")
+                ]]),
+                parse_mode="HTML"
+            )
+            # Сохраняем ID нового сообщения
+            await state.update_data(invoice_message_id=new_message.message_id)
+
+# ==================== ПРОВЕРКА ОПЛАТЫ ====================
+
+@router.callback_query(F.data.startswith("check_payment_"))
+async def check_payment(callback: CallbackQuery, state: FSMContext):
+    invoice_id = callback.data.replace("check_payment_", "")
+    data = await state.get_data()
+    message_id = data.get("invoice_message_id")
+    game_id = data.get("game_id")
+    game_type = data.get("game_type")
+    amount = data.get("amount")
+    currency = data.get("currency")
+    description = data.get("description")
+    pay_url = data.get("pay_url")
+
+    if not all([message_id, game_id, game_type, amount, currency, pay_url]):
+        await callback.message.edit_text(
+            "Ошибка: данные для проверки отсутствуют. Попробуй снова.",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text="🏠 В главное меню", callback_data="back_main")
+            ]]),
+            parse_mode="HTML"
+        )
+        await callback.answer()
+        return
+
+    async with async_session_maker() as session:
+        transaction = await TransactionCRUD.get_by_invoice_id(session, invoice_id)
+        if not transaction:
+            await callback.message.edit_text(
+                "Ошибка: транзакция не найдена.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="🏠 В главное меню", callback_data="back_main")
+                ]]),
+                parse_mode="HTML"
+            )
+            await callback.answer()
+            return
+
+        try:
+            # Используем метод get_invoices для проверки статуса инвойса
+            invoice_response = await cryptobot.get_invoices(invoice_ids=invoice_id)
+            logger.info(f"Ответ от CryptoBot API: {invoice_response}")
+            invoice_data = invoice_response.get("result", [{}])[0]
+            invoice_status = invoice_data.get("status")
+
+            if invoice_status != "paid":
+                await callback.message.edit_text(
+                    f"Ожидаем оплату...\n\n"
+                    f"{description}\n\n"
+                    f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
+                    f"Статус: <b>Ожидает оплаты</b>",
+                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text="💳 Оплатить", url=pay_url),
+                        InlineKeyboardButton(text="🔄 Проверить оплату", callback_data=f"check_payment_{invoice_id}"),
+                        InlineKeyboardButton(text="❌ Отмена", callback_data="cancel")
+                    ]]),
+                    parse_mode="HTML"
+                )
+                await callback.answer("Счёт ещё не оплачен")
+                return
+
+            # Если оплата подтверждена, обновляем статус транзакции
+            await TransactionCRUD.update_status(session, invoice_id, TransactionStatus.PAID)
+            await session.commit()
+
+            await callback.message.edit_text(
+                f"Оплата подтверждена!\n\n"
+                f"{description}\n\n"
+                f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
+                f"Статус: <b>Оплачено</b>",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="🏠 В главное меню", callback_data="back_main")
+                ]]),
+                parse_mode="HTML"
+            )
+            await callback.answer("Оплата успешно подтверждена!")
+            await state.clear()
+
+        except Exception as e:
+            logger.error(f"Ошибка при проверке оплаты: {e}")
+            await callback.message.edit_text(
+                "Ошибка при проверке оплаты. Попробуй снова.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="🏠 В главное меню", callback_data="back_main")
+                ]]),
+                parse_mode="HTML"
+            )
+            await callback.answer("Произошла ошибка. Попробуй снова.")
+
+# ==================== НАВИГАЦИЯ НАЗАД ====================
+
+@router.callback_query(F.data.startswith("back_to_bet_"))
+async def back_to_bet_selection(callback: CallbackQuery, state: FSMContext):
+    """Возврат к выбору типа ставки из выбора суммы"""
+    await state.clear()
+    
+    game_type = callback.data.replace("back_to_bet_", "")
+    
+    if game_type.startswith("dice"):
+        if game_type.startswith("dice_num"):
+            await callback.message.edit_text(
+                "🎲 КОСТИ: Угадай число\n\n⚡️Коэффициент: 3.1x\nВыбери число:",
+                reply_markup=get_dice_exact_numbers()
+            )
+        else:
+            await callback.message.edit_text(
+                "🎲 <b>КОСТИ</b>\n\nВыбери тип ставки:",
+                reply_markup=get_dice_bet_types(),
+                parse_mode="HTML"
+            )
+    elif game_type.startswith("darts"):
+        await callback.message.edit_text(
+            "🎯 <b>ДАРТС</b>\n\nВыбери тип ставки:",
+            reply_markup=get_darts_bet_types(),
+            parse_mode="HTML"
+        )
+    elif game_type.startswith("basketball"):
+        await callback.message.edit_text(
+            "🏀 <b>БАСКЕТБОЛ</b>\n\nВыбери тип ставки:",
+            reply_markup=get_basketball_bet_types(),
+            parse_mode="HTML"
+        )
+    elif game_type.startswith("football"):
+        await callback.message.edit_text(
+            "⚽️ <b>ФУТБОЛ</b>\n\nВыбери тип ставки:",
+            reply_markup=get_football_bet_types(),
+            parse_mode="HTML"
+        )
+    elif game_type.startswith("bowling"):
+        await callback.message.edit_text(
+            "🎳 <b>БОУЛИНГ</b>\n\nВыбери тип ставки:",
+            reply_markup=get_bowling_bet_types(),
+            parse_mode="HTML"
+        )
+    else:
+        await callback.message.edit_text(
+            "🎮 <b>Выбери игру:</b>",
+            reply_markup=get_games_menu(),
+            parse_mode="HTML"
+        )
+    
+    await callback.answer()
+
+@router.callback_query(F.data == "back_to_amount")
+async def back_to_amount_selection(callback: CallbackQuery, state: FSMContext):
+    """Возврат к выбору суммы из выбора валюты"""
+    data = await state.get_data()
+    game_type = data.get("game_type", "")
+    description = data.get("description", "Выбери сумму ставки")
+    
+    await state.set_state(BetFlow.entering_amount)
+    
+    await callback.message.edit_text(
+        f"{description}\n\n"
+        f"Выбери сумму ставки (минимум {MIN_BET} USD):",
+        reply_markup=get_amount_keyboard(game_type),
+        parse_mode="HTML"
+    )
+    await callback.answer()
+
+# ==================== ОТМЕНА И НАВИГАЦИЯ ====================
+
+@router.callback_query(F.data == "cancel")
+async def cancel_callback(callback: CallbackQuery, state: FSMContext):
+    """Полная отмена - возврат в главное меню"""
+    await state.clear()
+    await callback.message.delete()
+    await callback.message.answer(
+        "Действие отменено.\n\nВыбери действие:",
+        reply_markup=get_main_menu()
+    )
+    await callback.answer()
+
+@router.callback_query(F.data == "back_main")
+async def back_to_main(callback: CallbackQuery, state: FSMContext):
+    """Возврат в главное меню"""
+    await state.clear()
+    await callback.message.delete()
+    await callback.message.answer(
+        "🏠 Главное меню:",
+        reply_markup=get_main_menu()
+    )
+    await callback.answer()
+
+@router.callback_query(F.data == "back_to_games")
+async def back_to_games(callback: CallbackQuery, state: FSMContext):
+    """Возврат к списку игр"""
+    await state.clear()
+    await callback.message.edit_text(
+        "🎮 <b>Выбери игру:</b>",
+        reply_markup=get_games_menu(),
+        parse_mode="HTML"
+    )
+    await callback.answer()
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
@@ -59,8 +394,8 @@ async def cmd_start(message: Message, state: FSMContext):
         await UserCRUD.get_or_create(
             session,
             telegram_id=message.from_user.id,
-            username=message.from_user.username,
-            first_name=message.from_user.first_name
+            username=message.from_user.username or "Unknown",
+            first_name=message.from_user.first_name or "User"
         )
 
     await message.answer(
@@ -88,7 +423,12 @@ async def show_games(message: Message, state: FSMContext):
 async def show_stats(message: Message):
     """Вывод статистики пользователя в новом формате"""
     async with async_session_maker() as session:
-        user = await UserCRUD.get_or_create(session, message.from_user.id)
+        user = await UserCRUD.get_or_create(
+            session,
+            telegram_id=message.from_user.id,
+            username=message.from_user.username or "Unknown",
+            first_name=message.from_user.first_name or "User"
+        )
         username = user.username or "Без имени"
 
         total_games = user.games_played
@@ -173,7 +513,7 @@ async def show_help(message: Message):
 
 @router.callback_query(F.data == "game_dice")
 async def game_dice(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎲 <b>КОСТИ</b>\n\nВыбери тип ставки:",
         reply_markup=get_dice_bet_types(),
         parse_mode="HTML"
@@ -185,7 +525,7 @@ async def dice_high_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "dice_high"
     await state.update_data(game_type=game_type, description="🎲 <b>КОСТИ: Больше (4-5-6)</b>\n💰 Коэффициент: <b>1.8x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎲 <b>КОСТИ: Больше (4-5-6)</b>\n💰 Коэффициент: <b>1.8x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -198,7 +538,7 @@ async def dice_low_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "dice_low"
     await state.update_data(game_type=game_type, description="🎲 <b>КОСТИ: Меньше (1-2-3)</b>\n💰 Коэффициент: <b>1.8x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎲 <b>КОСТИ: Меньше (1-2-3)</b>\n💰 Коэффициент: <b>1.8x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -211,7 +551,7 @@ async def dice_even_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "dice_even"
     await state.update_data(game_type=game_type, description="🎲 <b>КОСТИ: Четное (2-4-6)</b>\n💰 Коэффициент: <b>1.8x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎲 <b>КОСТИ: Четное (2-4-6)</b>\n💰 Коэффициент: <b>1.8x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -224,7 +564,7 @@ async def dice_odd_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "dice_odd"
     await state.update_data(game_type=game_type, description="🎲 <b>КОСТИ: Нечетное (1-3-5)</b>\n💰 Коэффициент: <b>1.8x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎲 <b>КОСТИ: Нечетное (1-3-5)</b>\n💰 Коэффициент: <b>1.8x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -248,7 +588,7 @@ async def dice_exact_bet(callback: CallbackQuery, state: FSMContext):
     game_type = f"dice_num_{number}"
     await state.update_data(game_type=game_type, description=f"🎲 <b>КОСТИ: Угадать число {number}</b>\n💰 Коэффициент: <b>3.1x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         f"🎲 <b>КОСТИ: Угадать число {number}</b>\n💰 Коэффициент: <b>3.1x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -260,7 +600,7 @@ async def dice_exact_bet(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "game_darts")
 async def game_darts(callback: CallbackQuery):
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎯 <b>ДАРТС</b>\n\nВыбери тип ставки:",
         reply_markup=get_darts_bet_types(),
         parse_mode="HTML"
@@ -272,7 +612,7 @@ async def darts_red_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "darts_red"
     await state.update_data(game_type=game_type, description="🎯 <b>ДАРТС: Красное (2,4)</b>\n💰 Коэффициент: <b>1.8x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎯 <b>ДАРТС: Красное (2,4)</b>\n💰 Коэффициент: <b>1.8x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -285,7 +625,7 @@ async def darts_white_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "darts_white"
     await state.update_data(game_type=game_type, description="🎯 <b>ДАРТС: Белое (3,5)</b>\n💰 Коэффициент: <b>1.8x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎯 <b>ДАРТС: Белое (3,5)</b>\n💰 Коэффициент: <b>1.8x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -298,7 +638,7 @@ async def darts_center_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "darts_6"
     await state.update_data(game_type=game_type, description="🎯 <b>ДАРТС: Центр (6)</b>\n💰 Коэффициент: <b>2.5x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎯 <b>ДАРТС: Центр (6)</b>\n💰 Коэффициент: <b>2.5x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -311,7 +651,7 @@ async def darts_miss_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "darts_1"
     await state.update_data(game_type=game_type, description="🎯 <b>ДАРТС: Мимо (1)</b>\n💰 Коэффициент: <b>2.5x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎯 <b>ДАРТС: Мимо (1)</b>\n💰 Коэффициент: <b>2.5x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -323,7 +663,7 @@ async def darts_miss_bet(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "game_basketball")
 async def game_basketball(callback: CallbackQuery):
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🏀 <b>БАСКЕТБОЛ</b>\n\nВыбери тип ставки:",
         reply_markup=get_basketball_bet_types(),
         parse_mode="HTML"
@@ -335,7 +675,7 @@ async def basketball_goal_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "basketball_goal"
     await state.update_data(game_type=game_type, description="🏀 <b>БАСКЕТБОЛ: Гол (4-5)</b>\n💰 Коэффициент: <b>1.8x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🏀 <b>БАСКЕТБОЛ: Гол (4-5)</b>\n💰 Коэффициент: <b>1.8x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -348,7 +688,7 @@ async def basketball_miss_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "basketball_miss"
     await state.update_data(game_type=game_type, description="🏀 <b>БАСКЕТБОЛ: Мимо (1-2-3)</b>\n💰 Коэффициент: <b>1.3x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🏀 <b>БАСКЕТБОЛ: Мимо (1-2-3)</b>\n💰 Коэффициент: <b>1.3x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -360,7 +700,7 @@ async def basketball_miss_bet(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "game_football")
 async def game_football(callback: CallbackQuery):
-    await callback.message.answer(
+    await callback.message.edit_text(
         "⚽️ <b>ФУТБОЛ</b>\n\nВыбери тип ставки:",
         reply_markup=get_football_bet_types(),
         parse_mode="HTML"
@@ -372,7 +712,7 @@ async def football_goal_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "football_goal"
     await state.update_data(game_type=game_type, description="⚽️ <b>ФУТБОЛ: Гол (4-5)</b>\n💰 Коэффициент: <b>1.8x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "⚽️ <b>ФУТБОЛ: Гол (4-5)</b>\n💰 Коэффициент: <b>1.8x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -385,7 +725,7 @@ async def football_miss_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "football_miss"
     await state.update_data(game_type=game_type, description="⚽️ <b>ФУТБОЛ: Мимо (1-2-3)</b>\n💰 Коэффициент: <b>1.3x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "⚽️ <b>ФУТБОЛ: Мимо (1-2-3)</b>\n💰 Коэффициент: <b>1.3x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -397,7 +737,7 @@ async def football_miss_bet(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "game_bowling")
 async def game_bowling(callback: CallbackQuery):
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎳 <b>БОУЛИНГ</b>\n\nВыбери тип ставки:",
         reply_markup=get_bowling_bet_types(),
         parse_mode="HTML"
@@ -409,7 +749,7 @@ async def bowling_strike_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "bowling_strike"
     await state.update_data(game_type=game_type, description="🎳 <b>БОУЛИНГ: Страйк (6)</b>\n💰 Коэффициент: <b>4.0x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎳 <b>БОУЛИНГ: Страйк (6)</b>\n💰 Коэффициент: <b>4.0x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -422,7 +762,7 @@ async def bowling_nonstrike_bet(callback: CallbackQuery, state: FSMContext):
     game_type = "bowling_nonstrike"
     await state.update_data(game_type=game_type, description="🎳 <b>БОУЛИНГ: Не страйк (1-5)</b>\n💰 Коэффициент: <b>1.2x</b>")
     await state.set_state(BetFlow.entering_amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         "🎳 <b>БОУЛИНГ: Не страйк (1-5)</b>\n💰 Коэффициент: <b>1.2x</b>\n\n"
         f"Выбери сумму ставки (минимум {MIN_BET} USD):",
         reply_markup=get_amount_keyboard(game_type),
@@ -436,11 +776,17 @@ async def bowling_nonstrike_bet(callback: CallbackQuery, state: FSMContext):
 async def process_amount_button(callback: CallbackQuery, state: FSMContext):
     """Обработка выбора суммы через кнопки"""
     if callback.data == "amount_custom":
-        await callback.message.answer(
+        await state.update_data(amount_message_id=callback.message.message_id)
+        
+        request_msg = await callback.message.answer(
             f"✍️ Введи свою сумму (минимум {MIN_BET} USD):\n\n"
             "<i>Пример: 0.1 или 2.5 или 15</i>",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_amount")
+            ]]),
             parse_mode="HTML"
         )
+        await state.update_data(request_message_id=request_msg.message_id)
         await callback.answer()
         return
     
@@ -448,11 +794,11 @@ async def process_amount_button(callback: CallbackQuery, state: FSMContext):
     try:
         amount = float(amount_str)
     except ValueError:
-        await callback.answer("❌ Ошибка суммы", show_alert=True)
+        await callback.answer("Ошибка суммы", show_alert=True)
         return
 
     if amount < MIN_BET:
-        await callback.answer(f"❌ Минимум {MIN_BET} USD", show_alert=True)
+        await callback.answer(f"Минимум {MIN_BET} USD", show_alert=True)
         return
 
     await state.update_data(amount=amount)
@@ -462,7 +808,7 @@ async def process_amount_button(callback: CallbackQuery, state: FSMContext):
     description = data.get("description", "")
     game_type = data.get("game_type", "")
     
-    await callback.message.answer(
+    await callback.message.edit_text(
         f"{description}\n\n"
         f"💰 Сумма ставки: <b>{amount} USD</b>\n\n"
         "Выбери валюту для оплаты:",
@@ -471,238 +817,60 @@ async def process_amount_button(callback: CallbackQuery, state: FSMContext):
     )
     await callback.answer()
 
-@router.message(BetFlow.entering_amount)
+@router.message(BetFlow.entering_amount, F.text.regexp(r'^\d*\.?\d+$'))
 async def process_custom_amount(message: Message, state: FSMContext):
-    """Обработка кастомной суммы"""
-    text = message.text.strip().replace(",", ".")
+    """Обработка ввода пользовательской суммы"""
     try:
-        amount = float(text)
+        amount = float(message.text)
+        if amount < MIN_BET:
+            await message.answer(
+                f"Минимальная ставка — {MIN_BET} USD. Введи сумму заново.",
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                    InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_amount")
+                ]]),
+                parse_mode="HTML"
+            )
+            return
+        await state.update_data(amount=amount)
+        await state.set_state(BetFlow.choosing_currency)
+        game_type = (await state.get_data()).get("game_type")
+        description = get_game_description(game_type, amount=amount)
+        await message.answer(
+            f"{description}\n\n"
+            f"Выбери валюту для оплаты:",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="USDT", callback_data="currency_USDT"),
+                    InlineKeyboardButton(text="TON", callback_data="currency_TON"),
+                    InlineKeyboardButton(text="BTC", callback_data="currency_BTC")
+                ],
+                [
+                    InlineKeyboardButton(text="ETH", callback_data="currency_ETH"),
+                    InlineKeyboardButton(text="LTC", callback_data="currency_LTC"),
+                    InlineKeyboardButton(text="TRX", callback_data="currency_TRX")
+                ],
+                [
+                    InlineKeyboardButton(text="BUSD", callback_data="currency_BUSD")
+                ],
+                [
+                    InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_amount")
+                ]
+            ]),
+            parse_mode="HTML"
+        )
+        # Удаляем сообщение с запросом суммы
+        data = await state.get_data()
+        request_message_id = data.get("request_message_id")
+        if request_message_id:
+            try:
+                await bot_instance.delete_message(chat_id=message.chat.id, message_id=request_message_id)
+            except Exception as e:
+                logger.error(f"Ошибка при удалении сообщения с запросом суммы: {e}")
     except ValueError:
-        await message.reply("❌ Неправильный формат. Введи число, например: 0.1")
-        return
-
-    if amount < MIN_BET:
-        await message.reply(f"❌ Минимальная ставка: {MIN_BET} USD")
-        return
-
-    await state.update_data(amount=amount)
-    await state.set_state(BetFlow.choosing_currency)
-    
-    data = await state.get_data()
-    description = data.get("description", "")
-    game_type = data.get("game_type", "")
-    
-    await message.answer(
-        f"{description}\n\n"
-        f"💰 Сумма ставки: <b>{amount} USD</b>\n\n"
-        "Выбери валюту для оплаты:",
-        reply_markup=get_currency_keyboard(game_type),
-        parse_mode="HTML"
-    )
-
-# ==================== ОБРАБОТКА ВАЛЮТЫ ====================
-
-@router.callback_query(F.data.startswith("currency_"), BetFlow.choosing_currency)
-async def process_currency(callback: CallbackQuery, state: FSMContext):
-    """Обработка выбора валюты"""
-    currency = callback.data.replace("currency_", "")
-    
-    data = await state.get_data()
-    game_type = data.get("game_type")
-    description = data.get("description")
-    amount = data.get("amount")
-
-    try:
-        await create_game_and_invoice(callback, game_type, description, amount, currency, state)
-        await state.clear()
-        await callback.answer()
-    except Exception as e:
-        logger.error(f"❌ Ошибка при создании инвойса: {e}")
-        await callback.message.answer("❌ Ошибка при создании счёта. Попробуй позже.")
-        await callback.answer("Ошибка", show_alert=True)
-
-# ==================== СОЗДАНИЕ ИГРЫ И ИНВОЙСА ====================
-
-async def create_game_and_invoice(callback: CallbackQuery, game_type: str, description: str, amount: float, currency: str, state: FSMContext):
-    """Создаёт запись игры, инвойс и отправляет ссылку пользователю"""
-    async with async_session_maker() as session:
-        user = await UserCRUD.get_or_create(
-            session,
-            telegram_id=callback.from_user.id,
-            username=callback.from_user.username,
-            first_name=callback.from_user.first_name
-        )
-
-        game_id = str(uuid.uuid4())
-        
-        game = await GameCRUD.create(
-            session=session,
-            game_id=game_id,
-            user_id=user.id,
-            game_type=game_type,
-            bet_amount=amount,
-            currency=currency
-        )
-
-        invoice_response = await cryptobot.create_invoice(
-            asset=currency,
-            amount=amount,
-            description=f"Ставка в казино: {game_type}"
-        )
-
-        invoice_id = str(invoice_response.get('invoice_id') or invoice_response.get('id') or uuid.uuid4())
-        pay_url = invoice_response.get('bot_invoice_url') or invoice_response.get('pay_url') or invoice_response.get('url')
-
-        if not pay_url:
-            raise ValueError("Не удалось получить URL для оплаты")
-
-        await TransactionCRUD.create(
-            session=session,
-            user_id=user.id,
-            invoice_id=invoice_id,
-            amount=amount,
-            currency=currency,
-            status=TransactionStatus.PENDING,
-            game_id=game_id,
-            pay_url=pay_url
-        )
-
-        # Получаем информацию об игре
-        game_info = GAME_DESCRIPTIONS.get(game_type, {'emoji': '🎮', 'name': game_type, 'coef': '?'})
-        
-        # Расчёт комиссии и чистой ставки
-        commission = amount * 0.10
-        net_bet = amount * 0.90
-        
-        await session.commit()
-
-        # ✅ НОВОЕ СООБЩЕНИЕ С ЭМОДЗИ
-        await callback.message.answer(
-            f"✅ <b>Счёт создан!</b>\n\n"
-            f"{game_info['emoji']} Игра: <b>{game_info['name']}</b>\n"
-            f"⚡️ Коэффициент: <b>{game_info['coef']}</b>\n\n"
-            f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
-            f"🏦 Комиссия казино: <b>{commission:.4f} {currency}</b> (10%)\n"
-            f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b>\n\n"
-            f"Оплати счёт по кнопке ниже:",
+        await message.answer(
+            "Введи корректную сумму (например, 0.05).",
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-                InlineKeyboardButton(text="💳 Оплатить", url=pay_url)
+                InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_amount")
             ]]),
             parse_mode="HTML"
         )
-
-# ==================== НАВИГАЦИЯ НАЗАД ====================
-
-@router.callback_query(F.data.startswith("back_to_bet_"))
-async def back_to_bet_selection(callback: CallbackQuery, state: FSMContext):
-    """Возврат к выбору типа ставки из выбора суммы"""
-    await state.clear()
-    
-    # Извлекаем game_type из callback_data
-    game_type = callback.data.replace("back_to_bet_", "")
-    
-    # Определяем к какой игре вернуться
-    if game_type.startswith("dice"):
-        if game_type.startswith("dice_num"):
-            # Если было выбрано конкретное число, возвращаемся к выбору чисел
-            await callback.message.edit_text(
-                "🎲 КОСТИ: Угадай число\n\n⚡️Коэффициент: 3.1x\nВыбери число:",
-                reply_markup=get_dice_exact_numbers()
-            )
-        else:
-            # Иначе возвращаемся к типам ставок на кости
-            await callback.message.edit_text(
-                "🎲 <b>КОСТИ</b>\n\nВыбери тип ставки:",
-                reply_markup=get_dice_bet_types(),
-                parse_mode="HTML"
-            )
-    elif game_type.startswith("darts"):
-        await callback.message.edit_text(
-            "🎯 <b>ДАРТС</b>\n\nВыбери тип ставки:",
-            reply_markup=get_darts_bet_types(),
-            parse_mode="HTML"
-        )
-    elif game_type.startswith("basketball"):
-        await callback.message.edit_text(
-            "🏀 <b>БАСКЕТБОЛ</b>\n\nВыбери тип ставки:",
-            reply_markup=get_basketball_bet_types(),
-            parse_mode="HTML"
-        )
-    elif game_type.startswith("football"):
-        await callback.message.edit_text(
-            "⚽️ <b>ФУТБОЛ</b>\n\nВыбери тип ставки:",
-            reply_markup=get_football_bet_types(),
-            parse_mode="HTML"
-        )
-    elif game_type.startswith("bowling"):
-        await callback.message.edit_text(
-            "🎳 <b>БОУЛИНГ</b>\n\nВыбери тип ставки:",
-            reply_markup=get_bowling_bet_types(),
-            parse_mode="HTML"
-        )
-    else:
-        # Если game_type неизвестен, возвращаемся к выбору игр
-        await callback.message.edit_text(
-            "🎮 <b>Выбери игру:</b>",
-            reply_markup=get_games_menu(),
-            parse_mode="HTML"
-        )
-    
-    await callback.answer()
-
-
-@router.callback_query(F.data == "back_to_amount")
-async def back_to_amount_selection(callback: CallbackQuery, state: FSMContext):
-    """Возврат к выбору суммы из выбора валюты"""
-    data = await state.get_data()
-    game_type = data.get("game_type", "")
-    description = data.get("description", "Выбери сумму ставки")
-    
-    # Возвращаемся в состояние выбора суммы
-    await state.set_state(BetFlow.entering_amount)
-    
-    await callback.message.edit_text(
-        f"{description}\n\n"
-        f"Выбери сумму ставки (минимум {MIN_BET} USD):",
-        reply_markup=get_amount_keyboard(game_type),
-        parse_mode="HTML"
-    )
-    await callback.answer()
-
-
-# ==================== ОТМЕНА И НАВИГАЦИЯ ====================
-
-@router.callback_query(F.data == "cancel")
-async def cancel_callback(callback: CallbackQuery, state: FSMContext):
-    """Полная отмена - возврат в главное меню"""
-    await state.clear()
-    await callback.message.delete()
-    await callback.message.answer(
-        "❌ Действие отменено.\n\nВыбери действие:",
-        reply_markup=get_main_menu()
-    )
-    await callback.answer()
-
-
-@router.callback_query(F.data == "back_main")
-async def back_to_main(callback: CallbackQuery, state: FSMContext):
-    """Возврат в главное меню"""
-    await state.clear()
-    await callback.message.delete()
-    await callback.message.answer(
-        "🏠 Главное меню:",
-        reply_markup=get_main_menu()
-    )
-    await callback.answer()
-
-
-@router.callback_query(F.data == "back_to_games")
-async def back_to_games(callback: CallbackQuery, state: FSMContext):
-    """Возврат к списку игр"""
-    await state.clear()
-    await callback.message.edit_text(
-        "🎮 <b>Выбери игру:</b>",
-        reply_markup=get_games_menu(),
-        parse_mode="HTML"
-    )
-    await callback.answer()
