@@ -1,3 +1,4 @@
+
 # ==================== keyboards.py - ИСПРАВЛЕННАЯ ВЕРСИЯ ====================
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
@@ -94,6 +95,9 @@ def get_basketball_bet_types():
 
 # ==================== ФУТБОЛ ====================
 
+
+
+
 def get_football_bet_types():
     """Типы ставок для футбола"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -123,14 +127,14 @@ def get_amount_keyboard(game_type: str = ""):
     """
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="0.5 USDT", callback_data="amount_0.5"),
             InlineKeyboardButton(text="1 USDT", callback_data="amount_1"),
+            InlineKeyboardButton(text="3 USDT", callback_data="amount_3"),
             InlineKeyboardButton(text="5 USDT", callback_data="amount_5")
         ],
         [
             InlineKeyboardButton(text="10 USDT", callback_data="amount_10"),
-            InlineKeyboardButton(text="50 USDT", callback_data="amount_50"),
-            InlineKeyboardButton(text="100 USDT", callback_data="amount_100")
+            InlineKeyboardButton(text="25 USDT", callback_data="amount_25"),
+            InlineKeyboardButton(text="50 USDT", callback_data="amount_50")
         ],
         [InlineKeyboardButton(text="✍️ Своя сумма", callback_data="amount_custom")],
         [InlineKeyboardButton(text="◀️ Назад", callback_data=f"back_to_bet_{game_type}")]
