@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:root@localhost:5432/crypto_casino"
     
     # Webhook
-    WEBHOOK_URL: str = "https://twelve-ducks-chert.loca.lt"
+    WEBHOOK_URL: str = "https://twelve-ducks-check.loca.lt"
     WEBHOOK_PORT: int = 8000
     WEBHOOK_PATH: str = "/webhook-secret-path"
     

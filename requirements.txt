@@ -16,3 +16,5 @@
  pydantic-settings==2.1.0
  # Testing
  httpx==0.26.0
+ aiocryptopay
+ 
