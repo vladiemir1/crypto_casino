@@ -1,33 +1,35 @@
-# Игнорировать скомпилированные файлы Python
-*.pyc
-__pycache__
+# Environment files
+.env
+.env.*
 
-# Игнорировать виртуальные окружения
+# Virtual environments
 venv/
 env/
-.venv*/
+.venv/
 
-# Игнорировать файлы IntelliJ IDEA
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
 .idea/
 *.iml
+*.ipr
+*.iws
+.vscode/
 
-# Игнорировать XML-файлы конфигурации (если не нужны)
-misc.xml
-modules.xml
-vcs.xml
-
-# Игнорировать лог-файлы
+# Logs
 *.log
-
-# Игнорировать системные файлы
-.DS_Store
-
-# Игнорировать файлы зависимостей, если они генерируются
-requirements.txt  # раскомментируйте, если не хотите отслеживать
-
-# Игнорировать временные файлы или конфигурации
-*.cfg
-
-# Игнорировать базы данных или бинарные файлы (если применимо)
-*.db
+logs/
 casino_bot.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Project files
+*.cfg
+*.db
