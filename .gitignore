@@ -32,4 +32,8 @@ Thumbs.db
 
 # Project files
 *.cfg
+<<<<<<< HEAD
 *.db
+=======
+*.db
+>>>>>>> 91f2620eefcba076c785906b0b228c4794c600a4
