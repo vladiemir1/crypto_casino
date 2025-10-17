@@ -167,7 +167,7 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx):
     emoji = emoji_map.get(game_type, "🎲")
 
     try:
-        await bot.send_message(user_telegram_id, "✅ Платеж получен! Через секунду бросаем...", parse_mode="HTML")
+        await bot.send_message(user_telegram_id, "🔥Ставка принята! Игра уже запущена...", parse_mode="HTML")
         dice_message = await bot.send_dice(chat_id=user_telegram_id, emoji=emoji)
         dice_value = dice_message.dice.value if dice_message and dice_message.dice else None
 
@@ -193,7 +193,7 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx):
         game_info = GAME_DESCRIPTIONS.get(game.game_type, {'emoji': '🎮', 'name': game.game_type, 'coef': '?'})
 
         # ✅ Проверка на крупный выигрыш
-        if payout > 0.1:  # ⚠️ ПОМЕНЯЙ НА 100 после тестов
+        if payout > 100:  # ⚠️ ПОМЕНЯЙ НА 100 после тестов
             usd_to_rub = await get_usd_to_rub_rate()
             payout_rub = payout * usd_to_rub
             await bot.send_message(
@@ -223,7 +223,7 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx):
                 await bot.send_message(
                     user_telegram_id,
                     f"🎉 <b>Вы выиграли {payout:.2f} USD ({payout_rub:.2f} RUB)!</b>\n\n"
-                    f"<blockquote>💸 Ваш выигрыш успешно зачислен на ваш CryptoBot кошелёк.\n"
+                    f"<blockquote>💸 Получите ваш выигрыш по кнопке ниже.\n"
                     f"🚀 Удачи в следующих ставках!</blockquote>",
                     reply_markup=keyboard,
                     parse_mode="HTML"
