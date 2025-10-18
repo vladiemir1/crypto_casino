@@ -149,7 +149,7 @@ async def create_game_and_invoice(callback: CallbackQuery, game_type: str, descr
             invoice_response = await create_invoice_with_return_btn(
                 asset=currency,
                 amount=str(amount),
-                description=f"Ставка в казино: {game_type}",
+                description=f"", #сообщение которое выводится в критпобота после оплаты
                 
                 paid_btn_url=return_url
             )
@@ -198,12 +198,12 @@ async def create_game_and_invoice(callback: CallbackQuery, game_type: str, descr
         # Обновляем сообщение
         try:
             await callback.message.edit_text(
-                f"<b>✅ Счёт создан!</b>\n"
+                f"<b>✅ Счёт создан!</b>\n\n"
                 f"<blockquote>🎮 Игра: <b>{game_info['name']}</b>\n"
                 f"⚡️ Коэффициент: <b>{game_info['coef']}</b>\n"
                 f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
                 f"💼 Комиссия казино: <b>{commission:.4f} {currency}</b> (10%)\n"
-                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b></blockquote>\n"
+                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b></blockquote>\n\n"
                 f"Оплати счёт по кнопке ниже:",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
                     InlineKeyboardButton(text="💳 Оплатить", url=pay_url),
@@ -213,12 +213,12 @@ async def create_game_and_invoice(callback: CallbackQuery, game_type: str, descr
         except Exception as e:
             logger.error(f"Ошибка при редактировании сообщения: {e}")
             new_message = await callback.message.answer(
-                f"<b>Счёт создан!</b>\n"
+                f"<b>Счёт создан!</b>\n\n"
                 f"<blockquote>🎮 Игра: <b>{game_info['name']}</b>\n"
                 f"⚡️ Коэффициент: <b>{game_info['coef']}</b>\n"
                 f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
                 f"💼 Комиссия казино: <b>{commission:.4f} {currency}</b> (10%)\n"
-                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b></blockquote>\n"
+                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b></blockquote>\n\n"
                 f"Оплати счёт по кнопке ниже:",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
                     InlineKeyboardButton(text="💳 Оплатить", url=pay_url),
@@ -448,12 +448,25 @@ async def back_to_main(callback: CallbackQuery, state: FSMContext):
 async def back_to_games(callback: CallbackQuery, state: FSMContext):
     """Возврат к списку игр"""
     await state.clear()
-    await callback.message.edit_text(
-        "🎮 <b>Выбери игру:</b>",
-        reply_markup=get_games_menu(),
-        parse_mode="HTML"
-    )
+
+    # Проверяем, если в сообщении есть слово "Вы выиграли" — значит была победа
+    if "Победа" in callback.message.text:
+        # Просто отправляем новое сообщение, не редактируя старое
+        await callback.message.answer(
+            "🎮 <b>Выбери игру:</b>",
+            reply_markup=get_games_menu(),
+            parse_mode="HTML"
+        )
+    else:
+        # Если это не сообщение о выигрыше — редактируем старое, как раньше
+        await callback.message.edit_text(
+            "🎮 <b>Выбери игру:</b>",
+            reply_markup=get_games_menu(),
+            parse_mode="HTML"
+        )
+
     await callback.answer()
+
 
 @router.message(Command("start"))
 async def cmd_start(message: Message, state: FSMContext):
@@ -468,12 +481,10 @@ async def cmd_start(message: Message, state: FSMContext):
         )
 
     await message.answer(
-        "🎰 <b>Добро пожаловать в Crypto Casino!</b>\n\n"
-        "🎮 Играй в честные Telegram-игры\n"
-        "💰 Выигрывай криптовалюту\n"
-        "⚡️ Мгновенные выплаты\n\n"
-        "Все игры используют <b>Telegram Dice API</b> — результат генерируется Telegram!\n\n"
-        "💻Выбери действие:",
+        "<b>[Название] - игры нового поколения</b>\n\n"
+        "📇 Без регистрации | 🔑 Без подкруток | 🚀 Без ожидания\n\n"
+        "💎За честность отвечает Telegram, за выплаты - CryptoBot, за результат  - только ты. Погнали?\n\n"
+        "Выбери действие:",
         reply_markup=get_main_menu(),
         parse_mode="HTML"
     )
@@ -564,18 +575,16 @@ async def show_stats(message: Message):
 async def show_help(message: Message):
     """Инструкция по использованию казино"""
     await message.answer(
-        "ℹ️ <b>Как играть:</b>\n\n"
-        "1️⃣ Выбери игру из меню\n"
-        "2️⃣ Выбери тип ставки\n"
-        f"3️⃣ Выбери сумму (минимум {MIN_BET} USD)\n"
-        "4️⃣ Выбери валюту для оплаты\n"
-        "5️⃣ Оплати счёт через @CryptoBot\n"
-        "6️⃣ Смотри результат в виде анимации!\n"
-        "7️⃣ Если выиграл — деньги придут автоматически\n\n"
-        "🎲 Все игры используют Telegram Dice API\n"
-        "✅ Результат генерирует Telegram (не мы!)\n"
-        "🔒 Полная честность и прозрачность\n"
-        "💼 Комиссия казино: 10% (вычитается из депозита)\n\n"
+        "ℹ️ <b>Краткая инструкция к игре:</b>\n\n"
+        "<b>1.</b> Выбери игру из меню \n"
+        "<b>2.</b> Выбери тип ставки\n"
+        f"<b>3.</b> Выбери сумму (минимум {MIN_BET} USD)\n"
+        "<b>4.</b> Выбери валюту для оплаты\n"
+        "<b>5.</b> Оплати счёт через @CryptoBot\n"
+        "<b>6.</b> Наблюдай за игрой!\n\n"
+        "🤖 Удобно - формат бота в любимом мессенджере\n"
+        "🪽 Быстро - забирай свой выигрыш сразу, никаких задержек\n"
+        "👁 Прозрачно - результат генерируется с помощью Telegram\n\n"
         "Поддержка: @yoursupport",
         parse_mode="HTML"
     )

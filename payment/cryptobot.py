@@ -106,7 +106,7 @@ async def create_game_and_invoice(telegram_id: int, game_type: str, bet_amount: 
                 bet_amount=bet_amount,
                 currency=currency
             )
-            logger.info(f"🎮 Игра {game_type} создана (id={game_id})")
+            logger.info(f"Игра {game_type} создана (id={game_id})")
 
             # ✅ Создаём инвойс
             crypto_api = CryptoBotAPI(settings.cryptobot_token)
@@ -131,11 +131,11 @@ async def create_game_and_invoice(telegram_id: int, game_type: str, bet_amount: 
             )
 
             await session.commit()
-            logger.info(f"💰 Счёт создан: {pay_url} ({bet_amount} {currency})")
+            logger.info(f" Счёт создан: {pay_url} ({bet_amount} {currency})")
             return pay_url
 
         except Exception as e:
-            logger.error(f"❌ Ошибка в create_game_and_invoice: {e}")
+            logger.error(f" Ошибка в create_game_and_invoice: {e}")
             raise
 
 
@@ -143,14 +143,14 @@ async def setup_cryptobot_webhook():
     """Автоматическая настройка webhook для CryptoBot"""
     try:
         webhook_url = f"{settings.WEBHOOK_URL}{settings.WEBHOOK_PATH}"
-        logger.info(f"🔧 Настройка CryptoBot webhook: {webhook_url}")
+        logger.info(f" Настройка CryptoBot webhook: {webhook_url}")
         
         # CryptoBot не требует явной установки webhook через API
         # Webhook настраивается в боте @CryptoBot или передается при создании инвойса
-        logger.info("✅ CryptoBot использует webhook URL при создании инвойсов")
+        logger.info(" CryptoBot использует webhook URL при создании инвойсов")
         return True
     except Exception as e:
-        logger.error(f"❌ Ошибка настройки CryptoBot webhook: {e}")
+        logger.error(f" Ошибка настройки CryptoBot webhook: {e}")
         return False
 
 

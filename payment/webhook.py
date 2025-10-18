@@ -184,7 +184,7 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx, sessi
             usd_to_rub = await get_usd_to_rub_rate()
             payout_rub = payout * usd_to_rub
             text = (
-                f"🎉 <b>Вы выиграли {payout:.2f} USD ({payout_rub:.2f} RUB)!</b>\n\n"
+                f"🎉 <b>Победа! Твой выигрыш {payout:.2f} USD ({payout_rub:.2f} RUB)!</b>\n\n"
                 f"<blockquote>💸 Ваш выигрыш будет зачислен администраторами вручную.\n"
                 f"🚀 Удачи в следующих ставках!\n\n"
                 f"Тех.поддержка: @yoursupport</blockquote>"
@@ -210,9 +210,10 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx, sessi
                 ])
 
                 text = (
-                    f"🎉 <b>Вы выиграли {payout:.2f} USD ({payout_rub:.2f} RUB)!</b>\n\n"
-                    f"<blockquote>💸 Получите ваш выигрыш по кнопке ниже.\n"
-                    f"🚀 Удачи в следующих ставках!</blockquote>"
+                    f"🎉 <b>Победа! Твой выигрыш {payout:.2f} USD ({payout_rub:.2f} RUB)!</b>\n\n"
+                    f"<blockquote>💸 Удача на твоей стороне — не сбавляй обороты!\n"
+                    f"🚀 Следующие победы уже ждут тебя!</blockquote>\n\n"
+                    f"Получи свой выигрыш по кнопке ниже:"
                 )
                 await bot.send_message(user_telegram_id, text, reply_markup=keyboard, parse_mode="HTML")
 
@@ -227,9 +228,7 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx, sessi
         else:
             # Проигрыш
             text = (
-                f"❌ <b>Проигрыш</b>\n\n"
-                f"{game_info['emoji']} Результат: <b>{dice_value}</b>\n\n"
-                f"Попробуй еще раз! 🍀"
+                f"🍀Удача на твоей стороне — просто нужно ещё несколько попыток!"
             )
             await bot.send_message(user_telegram_id, text, reply_markup=play_again_kb, parse_mode="HTML")
 

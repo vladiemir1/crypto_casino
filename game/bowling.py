@@ -5,17 +5,17 @@ class BowlingGame(TelegramDiceGame):
     """
     🎳 Боулинг (1-6)
     
-    6 - Страйк (4.0x)
+    6 - Страйк (3.1x)
     1-5 - Не страйк (1.2x)
     """
     
     PAYOUTS = {
-        1: 1.2,
-        2: 1.2,
-        3: 1.2,
-        4: 1.2,
-        5: 1.2,
-        6: 4.0
+        1: 2.0,
+        2: 2.0,
+        3: 2.0,
+        4: 2.0,
+        5: 2.0,
+        6: 3.1
     }
     
     KEGELS = {
@@ -43,7 +43,7 @@ class BowlingGame(TelegramDiceGame):
         
         if (self.bet_type == "strike" and is_strike) or (self.bet_type == "nonstrike" and not is_strike):
             result = "win"
-            multiplier = 4.0 if is_strike else 1.2
+            multiplier = 3.1 if is_strike else 2.0
         else:
             result = "loss"
             multiplier = 0
