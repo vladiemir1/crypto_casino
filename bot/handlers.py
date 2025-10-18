@@ -230,7 +230,6 @@ async def check_payment(callback: CallbackQuery, state: FSMContext):
             return
 
         try:
-            # Используем метод get_invoices для проверки статуса инвойса
             invoice_response = await cryptobot.get_invoices(invoice_ids=invoice_id)
             logger.info(f"Ответ от CryptoBot API: {invoice_response}")
             invoice_data = invoice_response.get("result", [{}])[0]
@@ -252,25 +251,60 @@ async def check_payment(callback: CallbackQuery, state: FSMContext):
                 await callback.answer("Счёт ещё не оплачен")
                 return
 
-            # Если оплата подтверждена, обновляем статус транзакции
+            # Оплата подтверждена
             await TransactionCRUD.update_status(session, invoice_id, TransactionStatus.PAID)
+            
+            # Получаем игру
+            game = await GameCRUD.get_by_game_id(session, game_id)
+            if not game:
+                logger.error(f"Игра {game_id} не найдена")
+                await callback.message.edit_text(
+                    "Ошибка: игра не найдена.",
+                    reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
+                        InlineKeyboardButton(text="🏠 В главное меню", callback_data="back_main")
+                    ]]),
+                    parse_mode="HTML"
+                )
+                await callback.answer("Ошибка", show_alert=True)
+                return
+            
             await session.commit()
 
             await callback.message.edit_text(
-                f"Оплата подтверждена!\n\n"
-                f"{description}\n\n"
-                f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
-                f"Статус: <b>Оплачено</b>",
-                reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
-                    InlineKeyboardButton(text="🏠 В главное меню", callback_data="back_main")
-                ]]),
+                f"✅ <b>Оплата подтверждена!</b>\n\n🎮 Запускаю игру...",
                 parse_mode="HTML"
             )
-            await callback.answer("Оплата успешно подтверждена!")
+            await callback.answer("Оплата подтверждена!")
+            await sleep(1)
+            
+            # Импорты игр
+            from game.dice import DiceGame
+            from game.darts import DartsGame
+            from game.basketball import BasketballGame
+            from game.bowling import BowlingGame
+            
+            # Определяем игру
+            if game_type.startswith("dice"):
+                game_instance = DiceGame(bot_instance, game, session)
+            elif game_type.startswith("darts"):
+                game_instance = DartsGame(bot_instance, game, session)
+            elif game_type.startswith("basketball"):
+                game_instance = BasketballGame(bot_instance, game, session)
+            elif game_type.startswith("football"):
+                game_instance = FootballGame(bot_instance, game, session)
+            elif game_type.startswith("bowling"):
+                game_instance = BowlingGame(bot_instance, game, session)
+            else:
+                logger.error(f"Неизвестный тип игры: {game_type}")
+                await callback.message.edit_text("Ошибка: неизвестный тип игры.", parse_mode="HTML")
+                return
+            
+            # ЗАПУСКАЕМ ИГРУ
+            await game_instance.play(callback.message.chat.id)
             await state.clear()
 
         except Exception as e:
-            logger.error(f"Ошибка при проверке оплаты: {e}")
+            logger.error(f"Ошибка: {e}", exc_info=True)
             await callback.message.edit_text(
                 "Ошибка при проверке оплаты. Попробуй снова.",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
@@ -278,7 +312,7 @@ async def check_payment(callback: CallbackQuery, state: FSMContext):
                 ]]),
                 parse_mode="HTML"
             )
-            await callback.answer("Произошла ошибка. Попробуй снова.")
+            await callback.answer("Произошла ошибка.")
 
 # ==================== НАВИГАЦИЯ НАЗАД ====================
 
@@ -466,18 +500,20 @@ async def show_stats(message: Message):
             favorite_game = "Не определена"
             favorite_game_count = 0
 
+  ## Максимальная выплата
         max_win_query = await session.execute(
             text("""
-                SELECT MAX(payout - bet_amount) as max_win 
+                SELECT COALESCE(MAX(payout), 0) 
                 FROM games 
                 WHERE user_id = :user_id 
-                AND status = 'COMPLETED' 
-                AND result = 'WIN'
-                AND payout > bet_amount
+                AND payout IS NOT NULL
+                AND status != 'PENDING'
             """),
             {"user_id": user.id}
         )
         max_win = max_win_query.scalar() or 0.0
+        
+        
 
         stats_message = (
             f"🗂 Информация по пользователю <b>{username}</b>\n\n"
