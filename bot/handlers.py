@@ -16,7 +16,33 @@ from database.database import async_session_maker
 from database.crud import UserCRUD, GameCRUD, TransactionCRUD
 from database.models import GameResult, GameStatus, TransactionStatus
 from payment.cryptobot import cryptobot
+import aiohttp
+import json
+from config import settings  # убедись, что CRYPTOBOT_TOKEN есть в settings
 
+async def create_invoice_with_return_btn(asset: str, amount: str, description: str, paid_btn_name: str = None, paid_btn_url: str = None):
+    """Создаёт инвойс в CryptoBot вручную с поддержкой paid_btn_*"""
+    url = "https://pay.crypt.bot/api/createInvoice"
+    headers = {
+        "Crypto-Pay-API-Token": settings.cryptobot_token,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "asset": asset,
+        "amount": amount,
+        "description": description
+    }
+    # Используем ТОЛЬКО разрешённые значения для paid_btn_name
+    if paid_btn_url:
+        payload["paid_btn_name"] = "openBot"      # ← фиксированное значение
+        payload["paid_btn_url"] = paid_btn_url    # ← ссылка на вашего бота
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers=headers, json=payload) as resp:
+            data = await resp.json()
+            if not data.get("ok"):
+                raise Exception(f"CryptoBot API error: {data}")
+            return data["result"]
 router = Router()
 bot_instance = None
 MIN_BET = 0.05
@@ -48,6 +74,8 @@ GAME_DESCRIPTIONS = {
     'bowling_strike': {'emoji': '🎳', 'name': 'БОУЛИНГ: Страйк', 'coef': '4.0x'},
     'bowling_nonstrike': {'emoji': '🎳', 'name': 'БОУЛИНГ: Не страйк', 'coef': '1.2x'},
 }
+
+
 
 def get_game_description(game_type: str, amount: float = None) -> str:
     """Генерирует описание игры на основе game_type и суммы"""
@@ -94,9 +122,7 @@ async def create_game_and_invoice(callback: CallbackQuery, game_type: str, descr
             username=callback.from_user.username or "Unknown",
             first_name=callback.from_user.first_name or "User"
         )
-
         game_id = str(uuid.uuid4())
-        
         game = await GameCRUD.create(
             session=session,
             game_id=game_id,
@@ -106,19 +132,33 @@ async def create_game_and_invoice(callback: CallbackQuery, game_type: str, descr
             currency=currency
         )
 
+        # === Получаем username бота для кнопки возврата ===
+        return_url = None
         try:
-            invoice_response = await cryptobot.create_invoice(
+            bot_info = await bot_instance.get_me()
+            bot_username = bot_info.username
+            if bot_username:
+                return_url = f"https://t.me/{bot_username}"
+            else:
+                logger.warning("Бот не имеет username — кнопка возврата недоступна")
+        except Exception as e:
+            logger.error(f"Не удалось получить username бота: {e}")
+
+        # === Создаём инвойс через прямой API-запрос ===
+        try:
+            invoice_response = await create_invoice_with_return_btn(
                 asset=currency,
                 amount=str(amount),
-                description=f"Ставка в казино: {game_type}"
+                description=f"Ставка в казино: {game_type}",
+                
+                paid_btn_url=return_url
             )
         except Exception as e:
-            logger.error(f"Ошибка при создании инвойса: {e}")
+            logger.error(f"Ошибка при создании инвойса через API: {e}")
             raise
 
         invoice_id = str(invoice_response.get('invoice_id') or invoice_response.get('id') or uuid.uuid4())
         pay_url = invoice_response.get('bot_invoice_url') or invoice_response.get('pay_url') or invoice_response.get('url')
-
         if not pay_url:
             logger.error("Не удалось получить URL для оплаты")
             raise ValueError("Не удалось получить URL для оплаты")
@@ -136,14 +176,14 @@ async def create_game_and_invoice(callback: CallbackQuery, game_type: str, descr
 
         # Получаем информацию об игре
         game_info = GAME_DESCRIPTIONS.get(game_type, {'emoji': '🎮', 'name': game_type, 'coef': '?'})
-        
+
         # Расчёт комиссии и чистой ставки
         commission = amount * 0.10
         net_bet = amount * 0.90
-        
+
         await session.commit()
 
-        # Сохраняем ID сообщения и данные инвойса в state
+        # Сохраняем данные в state
         await state.update_data(
             invoice_message_id=callback.message.message_id,
             game_id=game_id,
@@ -155,42 +195,37 @@ async def create_game_and_invoice(callback: CallbackQuery, game_type: str, descr
             description=description
         )
 
-        # Обновляем существующее сообщение
+        # Обновляем сообщение
         try:
             await callback.message.edit_text(
-                f"<b>✅ Счёт создан!</b>\n\n"
+                f"<b>✅ Счёт создан!</b>\n"
                 f"<blockquote>🎮 Игра: <b>{game_info['name']}</b>\n"
                 f"⚡️ Коэффициент: <b>{game_info['coef']}</b>\n"
                 f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
                 f"💼 Комиссия казино: <b>{commission:.4f} {currency}</b> (10%)\n"
-                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b></blockquote>\n\n"
+                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b></blockquote>\n"
                 f"Оплати счёт по кнопке ниже:",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
                     InlineKeyboardButton(text="💳 Оплатить", url=pay_url),
-                    
                 ]]),
                 parse_mode="HTML"
             )
         except Exception as e:
             logger.error(f"Ошибка при редактировании сообщения: {e}")
-            # Fallback: отправляем новое сообщение
             new_message = await callback.message.answer(
-                f"<b>Счёт создан!</b>\n\n"
+                f"<b>Счёт создан!</b>\n"
                 f"<blockquote>🎮 Игра: <b>{game_info['name']}</b>\n"
-                f"⚡️ Коэффициент: <b>{game_info['coef']}</b>\n\n"
+                f"⚡️ Коэффициент: <b>{game_info['coef']}</b>\n"
                 f"💵 Сумма ставки: <b>{amount} {currency}</b>\n"
                 f"💼 Комиссия казино: <b>{commission:.4f} {currency}</b> (10%)\n"
-                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b></blockquote>\n\n"
+                f"🚀 Чистая ставка: <b>{net_bet:.4f} {currency}</b></blockquote>\n"
                 f"Оплати счёт по кнопке ниже:",
                 reply_markup=InlineKeyboardMarkup(inline_keyboard=[[
                     InlineKeyboardButton(text="💳 Оплатить", url=pay_url),
-                    
                 ]]),
                 parse_mode="HTML"
             )
-            # Сохраняем ID нового сообщения
             await state.update_data(invoice_message_id=new_message.message_id)
-
 # ==================== ПРОВЕРКА ОПЛАТЫ ====================
 
 @router.callback_query(F.data.startswith("check_payment_"))
@@ -966,3 +1001,4 @@ async def process_custom_amount(message: Message, state: FSMContext):
             ]]),
             parse_mode="HTML"
         ) 
+        

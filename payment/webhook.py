@@ -170,64 +170,81 @@ async def send_dice_and_wait_result(user_telegram_id: int, game: Game, tx, sessi
 
         result_enum = GameResult.WIN if win else GameResult.LOSS
 
-        # ✅ ИСПРАВЛЕНО: используем ту же сессию, убрана функция mark_game_completed
         await GameCRUD.complete_game(session, game, result_enum, payout)
         logger.info(f"Игра завершена: game_id={game.game_id}, result={result_enum}, payout={payout}")
 
         game_info = GAME_DESCRIPTIONS.get(game.game_type, {'emoji': '🎮', 'name': game.game_type, 'coef': '?'})
 
-        # Проверка на крупный выигрыш
-        if payout > 100:  # ⚠️ ПОМЕНЯЙ НА 100 после тестов
+        # === Подготовка клавиатуры с кнопкой "Играть снова" ===
+        play_again_kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🎮 Играть снова", callback_data="back_to_games")]
+        ])
+
+        if payout > 100:  # Крупный выигрыш — ручная выплата
             usd_to_rub = await get_usd_to_rub_rate()
             payout_rub = payout * usd_to_rub
-            await bot.send_message(
-                user_telegram_id,
+            text = (
                 f"🎉 <b>Вы выиграли {payout:.2f} USD ({payout_rub:.2f} RUB)!</b>\n\n"
                 f"<blockquote>💸 Ваш выигрыш будет зачислен администраторами вручную.\n"
                 f"🚀 Удачи в следующих ставках!\n\n"
-                f"Тех.поддержка: @yoursupport</blockquote>",
-                parse_mode="HTML"
+                f"Тех.поддержка: @yoursupport</blockquote>"
             )
+            await bot.send_message(user_telegram_id, text, reply_markup=play_again_kb, parse_mode="HTML")
             logger.warning(f"Крупный выигрыш ({payout} USD) у пользователя {user_telegram_id}")
             return
 
-        # --- Выплата ---
+        # --- Выплата через чек ---
         if payout > 0:
             try:
                 check_result = await cryptobot.create_check(asset=game.currency, amount=payout)
                 check_url = check_result.get('bot_check_url') or check_result.get('url')
+                if not check_url:
+                    raise ValueError("URL чека не получен")
 
                 usd_to_rub = await get_usd_to_rub_rate()
                 payout_rub = payout * usd_to_rub
 
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-                    InlineKeyboardButton(text="💰 Получить выигрыш", url=check_url)
-                ]])
+                keyboard = InlineKeyboardMarkup(inline_keyboard=[
+                    [InlineKeyboardButton(text="💰 Получить выигрыш", url=check_url)],
+                    [InlineKeyboardButton(text="🎮 Играть снова", callback_data="back_to_games")]
+                ])
 
-                await bot.send_message(
-                    user_telegram_id,
+                text = (
                     f"🎉 <b>Вы выиграли {payout:.2f} USD ({payout_rub:.2f} RUB)!</b>\n\n"
                     f"<blockquote>💸 Получите ваш выигрыш по кнопке ниже.\n"
-                    f"🚀 Удачи в следующих ставках!</blockquote>",
-                    reply_markup=keyboard,
-                    parse_mode="HTML"
+                    f"🚀 Удачи в следующих ставках!</blockquote>"
                 )
+                await bot.send_message(user_telegram_id, text, reply_markup=keyboard, parse_mode="HTML")
+
             except Exception as e:
                 logger.error(f"Ошибка при создании чека: {e}")
-                await bot.send_message(user_telegram_id, f"❌ Ошибка при создании чека выплаты: {e}", parse_mode="HTML")
+                await bot.send_message(
+                    user_telegram_id,
+                    f"❌ Ошибка при создании чека выплаты: {e}",
+                    reply_markup=play_again_kb,
+                    parse_mode="HTML"
+                )
         else:
-            await bot.send_message(
-                user_telegram_id,
+            # Проигрыш
+            text = (
                 f"❌ <b>Проигрыш</b>\n\n"
                 f"{game_info['emoji']} Результат: <b>{dice_value}</b>\n\n"
-                f"Попробуй еще раз! 🍀",
-                parse_mode="HTML"
+                f"Попробуй еще раз! 🍀"
             )
+            await bot.send_message(user_telegram_id, text, reply_markup=play_again_kb, parse_mode="HTML")
 
     except Exception as exc:
         logger.error(f"Ошибка в send_dice_and_wait_result: {exc}")
         traceback.print_exc()
-        await bot.send_message(user_telegram_id, f"❌ Ошибка обработки игры: {exc}", parse_mode="HTML")
+        play_again_kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🎮 Играть снова", callback_data="back_to_games")]
+        ])
+        await bot.send_message(
+            user_telegram_id,
+            f"❌ Ошибка обработки игры: {exc}",
+            reply_markup=play_again_kb,
+            parse_mode="HTML"
+        )
 
 
 # --- Результаты ---
