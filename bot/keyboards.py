@@ -44,8 +44,8 @@ def get_dice_bet_types():
             InlineKeyboardButton(text="🔻 Меньше (1-2-3) - 1.8x", callback_data="dice_low")
         ],
         [
-            InlineKeyboardButton(text="⚫️ Нечетное - 1.8x", callback_data="dice_odd"),
-            InlineKeyboardButton(text="⚪️ Четное - 1.8x", callback_data="dice_even")
+            InlineKeyboardButton(text="⚫️ Нечетное (1-3-5) - 1.8x", callback_data="dice_odd"),
+            InlineKeyboardButton(text="⚪️ Четное (2-4-6) - 1.8x", callback_data="dice_even")
         ],
         [InlineKeyboardButton(text="🎯 Угадать число - 3.1x", callback_data="dice_exact")],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_games")]
@@ -75,12 +75,12 @@ def get_darts_bet_types():
     """Типы ставок для дартс"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="🔴 Красное (2,4) - 1.8x", callback_data="darts_red"),
-            InlineKeyboardButton(text="⚪️ Белое (3,5) - 1.8x", callback_data="darts_white")
+            InlineKeyboardButton(text="🔴 Красное - 1.8x", callback_data="darts_red"),
+            InlineKeyboardButton(text="⚪️ Белое - 1.8x", callback_data="darts_white")
         ],
         [
-            InlineKeyboardButton(text="🎯 Центр (6) - 2.5x", callback_data="darts_6"),
-            InlineKeyboardButton(text="❌ Мимо (1) - 2.5x", callback_data="darts_1")
+            InlineKeyboardButton(text="🎯 Центр - 2.5x", callback_data="darts_6"),
+            InlineKeyboardButton(text="❌ Мимо - 2.5x", callback_data="darts_1")
         ],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_games")]
     ])
@@ -91,8 +91,8 @@ def get_darts_bet_types():
 def get_basketball_bet_types():
     """Типы ставок для баскетбола"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ Гол (4-5) - 1.8x", callback_data="basketball_goal")],
-        [InlineKeyboardButton(text="❌ Мимо (1-2-3) - 1.3x", callback_data="basketball_miss")],
+        [InlineKeyboardButton(text="✅ Гол - 1.8x", callback_data="basketball_goal")],
+        [InlineKeyboardButton(text="❌ Мимо - 1.3x", callback_data="basketball_miss")],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_games")]
     ])
     return keyboard
@@ -102,12 +102,12 @@ def get_basketball_bet_types():
 
 
 
-def get_basketball_bet_types():
+def get_football_bet_types():
     """Типы ставок для баскетбола"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="✅ Гол (4-5) - 1.8x", callback_data="basketball_goal"),
-            InlineKeyboardButton(text="❌ Мимо (1-2-3) - 1.3x", callback_data="basketball_miss")
+            InlineKeyboardButton(text="✅ Гол - 1.8x", callback_data="football_goal"),
+            InlineKeyboardButton(text="❌ Мимо - 1.3x", callback_data="football_miss")
         ],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_games")]
     ])
@@ -119,8 +119,8 @@ def get_bowling_bet_types():
     """Типы ставок для боулинга"""
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="✅ Страйк (6) - 4.0x", callback_data="bowling_strike"),
-            InlineKeyboardButton(text="❌ Не страйк (1-5) - 1.2x", callback_data="bowling_nonstrike")
+            InlineKeyboardButton(text="✅ Страйк - 4.0x", callback_data="bowling_strike"),
+            InlineKeyboardButton(text="❌ Не страйк - 1.2x", callback_data="bowling_nonstrike")
         ],
         [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_games")]
     ])
